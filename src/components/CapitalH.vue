@@ -110,11 +110,13 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
+            
           </template>
         </v-toolbar>
       </template>
-       <thead>
+      <thead>
         <tr>
+          <th class="text-left">ID</th>
           <th class="text-left">Concepto</th>
           <th class="text-left">Fondo</th>
           <th class="text-left">Número de Oficio</th>
@@ -125,10 +127,12 @@
           <th class="text-left">Ajuste Isr</th>
           <th class="text-left">Subsidio</th>
           <th class="text-left">Total a Pagar</th>
+          <th class="text-left">Opciones</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in desserts" :key="item.id">
+          <td>{{ item.id }}</td>
           <td>{{ item.concepto }}</td>
           <td>{{ item.fondo }}</td>
           <td>{{ item.numeroOficio }}</td>
@@ -139,6 +143,14 @@
           <td>{{ item.ajusteIsr }}</td>
           <td>{{ item.subsidioAjuste }}</td>
           <td>{{ item.pagar }}</td>
+          <td>
+            <v-btn class="mr-3" elevation="1" color="#C4AD2B" fab dark tile x-small @click="agregarTimbrado(item.id)">
+              <v-icon small> mdi-bell </v-icon>
+            </v-btn>
+            <v-dialog v-model="dialog2" max-width="700px">
+              <FormTimbrado :idCapitalH="item.id" @cerrar="close" />
+            </v-dialog>
+          </td>
         </tr>
       </tbody>
     </v-simple-table>
@@ -147,20 +159,22 @@
 
 <script>
 import axios from "axios";
+import FormTimbrado from "./FormTimbrado.vue";
 
 export default {
   name: "CapitalH",
   components: {
-    // Calendario,
+    FormTimbrado
   },
   data: () => ({
-    concepto:"",
+    concepto: "",
     dialog: false,
+    dialog2: false,
     search: "",
     numberRules: [
       (value) => value > 0 || "campo requerido",
       (value) => value > 0 || "El valor debe ser mayor a cero",
-      v => !!v || 'Name is required',
+      (v) => !!v || "Name is required",
     ],
     result: [],
     menu1: false,
@@ -172,22 +186,10 @@ export default {
     )
       .toISOString()
       .substr(0, 10),
-    /* headers: [
-      { text: "Concepto", align: "start", value: "concepto" },
-      { text: "Fondo", align: "start", value: "fondo" },
-      { text: "Número De Oficio", align: "start", value: "numeroOficio" },
-      { text: "Inicio", align: "start", value: "fechaInicio" },
-      { text: "Fin", align: "start", value: "fechaFin" },
-      { text: "Fecha de Pago", align: "start", value: "fechaPago" },
-      { text: "Retencion Isr", align: "start", value: "retencionIsr" },
-      { text: "Ajuste Isr", align: "start", value: "ajusteIsr" },
-      { text: "Subsidio + Ajuste", align: "start", value: "subsidioAjuste" },
-      { text: "A Pagar", align: "start", value: "pagar" },
-      { text: "Fecha Captura", align: "start", value: "fechaCaptura" },
-    ], */
     desserts: [],
     editedItem: [
       {
+        id: "",
         concepto: "",
         fondo: "",
         numeroOficio: "",
@@ -222,12 +224,15 @@ export default {
           this.editedItem.retencionIsr -
           this.editedItem.ajusteIsr -
           this.editedItem.subsidio;
-        // this.editedItem.pagar = this.editedItem.pagar.toLocaleString('en')
         return (this.editedItem.pagar = this.editedItem.pagar.toFixed(2));
       }
     },
   },
   methods: {
+    agregarTimbrado(id) {
+      console.log(id);
+      this.dialog2 = true;
+    },
     onlyNumber($event) {
       let keyCode = $event.keyCode ? $event.keyCode : $event.which;
       if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) {
@@ -237,7 +242,6 @@ export default {
     },
     formatDate(date) {
       if (!date) return null;
-
       const [year, month, day] = date.split("-");
       return `${month}/${day}/${year}`;
     },
@@ -258,9 +262,10 @@ export default {
       this.desserts.length = "";
       axios.get("http://localhost:8082/CapitalHumano").then((response) => {
         this.result = response.data.data;
-        console.log(response.data);
+        //console.log(response.data);
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
+            id: response.data[i].id,
             concepto: response.data[i].concepto,
             fondo: response.data[i].fondo,
             numeroOficio: response.data[i].numeroOficio,
@@ -277,29 +282,29 @@ export default {
       });
     },
     saveData: function () {
-      if(this.editedItem.concepto != null){
+      if (this.editedItem.concepto != null) {
         axios
-        .post("http://localhost:8082/CapitalHumano", {
-          concepto: this.editedItem.concepto,
-          fondo: this.editedItem.fondo,
-          numeroOficio: this.editedItem.numeroOficio,
-          fechaInicio: this.dates[0],
-          fechaFin: this.dates[1],
-          fechaPago: this.dateFechaPago,
-          retencionIsr: this.editedItem.retencionIsr,
-          ajusteIsr: this.editedItem.ajusteIsr,
-          subsidioAjuste: this.editedItem.subsidio,
-          pagar: this.editedItem.pagar,
-          fechaCaptura: this.dateFechaCaptura,
-        })
-        .then((response) => {
-          this.getMapping();
-          this.close();
-          console.log(response.data);
-        });
+          .post("http://localhost:8082/CapitalHumano", {
+            concepto: this.editedItem.concepto,
+            fondo: this.editedItem.fondo,
+            numeroOficio: this.editedItem.numeroOficio,
+            fechaInicio: this.dates[0],
+            fechaFin: this.dates[1],
+            fechaPago: this.dateFechaPago,
+            retencionIsr: this.editedItem.retencionIsr,
+            ajusteIsr: this.editedItem.ajusteIsr,
+            subsidioAjuste: this.editedItem.subsidio,
+            pagar: this.editedItem.pagar,
+            fechaCaptura: this.dateFechaCaptura,
+          })
+          .then((response) => {
+            this.getMapping();
+            this.close();
+          });
       }
     },
     close() {
+      console.log("asdsa")
       this.dialog = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);

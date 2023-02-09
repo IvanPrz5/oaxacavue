@@ -8,10 +8,10 @@
           <template>
             <v-dialog v-model="dialog" max-width="750px">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="success" dark v-bind="attrs" v-on="on">
+                <!-- <v-btn color="success" dark v-bind="attrs" v-on="on">
                   <v-icon>mdi-plus</v-icon>
                 </v-btn>
-                <v-divider class="mx-6" inset vertical></v-divider>
+                <v-divider class="mx-6" inset vertical></v-divider> -->
                 <v-menu v-model="menu1" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
                   offset-y min-width="auto">
                   <template v-slot:activator="{ on, attrs }">
@@ -69,10 +69,11 @@
                       </v-row>
                       <v-row>
                         <v-col cols="12" md="4">
-                          <v-text-field label="SNFC" v-model="editedItem.snfc" dense required outlined></v-text-field>
+                          <v-text-field label="SNFC" v-model="editedItem.descripcionSNFC" dense required
+                            outlined></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field label="Estatus Timbrado" v-model="editedItem.status" dense required
+                          <v-text-field label="Estatus Timbrado" v-model="editedItem.descripcionStatus" dense required
                             outlined></v-text-field>
                         </v-col>
                         <v-col>
@@ -113,10 +114,15 @@
                           <v-text-field label="Nómina" v-model="editedItem.nomina" dense required
                             outlined></v-text-field>
                         </v-col>
+                        <v-col cols="12" md="4">
+                          <v-text-field label="Nómina" v-model="editedItem.idCapitalH" dense required
+                            outlined></v-text-field>
+                        </v-col>
                       </v-row>
                       <v-row>
                         <v-col cols="12">
-                          <v-textarea label="Observaciones" v-model="editedItem.nomina" name="input-7-4" outlined></v-textarea>
+                          <v-textarea label="Observaciones" v-model="editedItem.observaciones" name="input-7-4"
+                            outlined></v-textarea>
                         </v-col>
                       </v-row>
                     </v-form>
@@ -154,10 +160,13 @@
           <th class="text-left">Número de Ejecuciones</th>
           <th class="text-left">Nómina</th>
           <th class="text-left">Observaciones</th>
+          <th class="text-left">Opciones</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in desserts" :key="item.idTimbrado">
+          <td v-show="false">{{ item.id }}</td>
+          <td v-show="false">{{ item.idTimbrado }}</td>
           <td>{{ item.archivo }}</td>
           <td>{{ item.archivoTimbrar }}</td>
           <td>{{ item.totalEmpleados }}</td>
@@ -174,6 +183,11 @@
           <td>{{ item.numEjecuciones }}</td>
           <td>{{ item.nomina }}</td>
           <td>{{ item.observaciones }}</td>
+          <td>
+            <v-btn class="mr-3" elevation="1" color="indigo" fab dark tile x-small @click="agregarFinalizado(item.idTimbrado)">
+              <v-icon small> mdi-plus </v-icon>
+            </v-btn>
+          </td>
         </tr>
       </tbody>
     </v-simple-table>
@@ -209,33 +223,22 @@ export default {
     )
       .toISOString()
       .substr(0, 10),
-    /* headers: [
-      { text: "Archivo", align: "start", value: "concepto" },
-      { text: "A", align: "start", value: "fondo" },
-      { text: "Número De Oficio", align: "start", value: "numeroOficio" },
-      { text: "Inicio", align: "start", value: "fechaInicio" },
-      { text: "Fin", align: "start", value: "fechaFin" },
-      { text: "Fecha de Pago", align: "start", value: "fechaPago" },
-      { text: "Retencion Isr", align: "start", value: "retencionIsr" },
-      { text: "Ajuste Isr", align: "start", value: "ajusteIsr" },
-      { text: "Subsidio + Ajuste", align: "start", value: "subsidioAjuste" },
-      { text: "A Pagar", align: "start", value: "pagar" },
-      { text: "Fecha Captura", align: "start", value: "fechaCaptura" },
-    ], */
     desserts: [],
     editedItem: [
       {
-        concepto: "",
-        fondo: "",
-        numeroOficio: "",
-        fechaInicio: "",
-        fechaFin: "",
-        fechaPago: "",
-        retencionIsr: "",
-        ajusteIsr: "",
-        subsidio: "",
-        pagar: "",
-        fechaCaptura: "",
+        archivo: "",
+        archivoTimbrar: "",
+        totalEmpleados: "",
+        descripcionSNFC: "",
+        descripcionStatus: "",
+        importeIsr: "",
+        neto: "",
+        documentoContable: "",
+        numero: "",
+        numEjecuciones: "",
+        nomina: "",
+        idCapitalH: "",
+        observaciones: "",
       },
     ],
   }),
@@ -259,12 +262,15 @@ export default {
           this.editedItem.retencionIsr -
           this.editedItem.ajusteIsr -
           this.editedItem.subsidio;
-        // this.editedItem.pagar = this.editedItem.pagar.toLocaleString('en')
         return (this.editedItem.pagar = this.editedItem.pagar.toFixed(2));
       }
     },
   },
   methods: {
+    agregarFinalizado(id) {
+      console.log(id);
+      this.dialog = true
+    },
     onlyNumber($event) {
       let keyCode = $event.keyCode ? $event.keyCode : $event.which;
       if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) {
@@ -298,15 +304,19 @@ export default {
         console.log(response.data);
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
+            id: response.data[i].capitalHEntity.id,
+            idTimbrado: response.data[i].idTimbrado,
             archivo: response.data[i].archivo,
             archivoTimbrar: response.data[i].archivoTimbrar,
             totalEmpleados: response.data[i].totalEmpleados,
             fechaInicio: response.data[i].fechaInicio,
             fechaFin: response.data[i].fechaFin,
             fechaPago: response.data[i].fechaPago,
-            descripcionSNFC: response.data[i].catalogoSNFCEntity.descripcion,/*  */
+            descripcionSNFC:
+              response.data[i].catalogoSNFCEntity.descripcion,
             importeIsr: response.data[i].importeIsr,
-            descripcionStatus: response.data[i].catalogoStatusEntity.descripcion,/*  */
+            descripcionStatus:
+              response.data[i].catalogoStatusEntity.descripcion,
             fechaSubida: response.data[i].fechaSubida,
             neto: response.data[i].neto,
             numEjecuciones: response.data[i].numEjecuciones,
@@ -319,27 +329,33 @@ export default {
       });
     },
     saveData: function () {
-      /* if (this.editedItem.concepto != null) {
+      if (this.editedItem.archivo != null) {
         axios
           .post("http://localhost:8082/Timbrado", {
-            concepto: this.editedItem.concepto,
-            fondo: this.editedItem.fondo,
-            numeroOficio: this.editedItem.numeroOficio,
+            archivo: this.editedItem.archivo,
+            archivoTimbrar: this.editedItem.archivoTimbrar,
+            totalEmpleados: this.editedItem.totalEmpleados,
             fechaInicio: this.dates[0],
             fechaFin: this.dates[1],
             fechaPago: this.dateFechaPago,
-            retencionIsr: this.editedItem.retencionIsr,
-            ajusteIsr: this.editedItem.ajusteIsr,
-            subsidioAjuste: this.editedItem.subsidio,
-            pagar: this.editedItem.pagar,
-            fechaCaptura: this.dateFechaCaptura,
+            catalogoSNFCEntity: { "idSNFC": this.editedItem.descripcionSNFC },
+            catalogoStatusEntity: { "idStatus": this.editedItem.descripcionStatus },
+            fechaSubida: this.dateFechaSubida,
+            importeIsr: this.editedItem.importeIsr,
+            neto: this.editedItem.neto,
+            documentoContable: this.editedItem.documentoContable,
+            numero: this.editedItem.numero,
+            numEjecuciones: this.editedItem.numEjecuciones,
+            nomina: this.editedItem.nomina,
+            capitalHEntity: { "id": this.editedItem.idCapitalH },
+            observaciones: this.editedItem.observaciones,
           })
           .then((response) => {
             this.getMapping();
             this.close();
-            console.log(response.data);
+            //console.log(response.data);
           });
-      } */
+      }
     },
     close() {
       this.dialog = false;

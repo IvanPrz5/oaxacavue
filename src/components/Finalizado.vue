@@ -149,19 +149,6 @@ export default {
     result: [],
     menu: false,
     dateFechaFin: "",
-    /* headers: [
-        { text: "Archivo", align: "start", value: "concepto" },
-        { text: "A", align: "start", value: "fondo" },
-        { text: "Número De Oficio", align: "start", value: "numeroOficio" },
-        { text: "Inicio", align: "start", value: "fechaInicio" },
-        { text: "Fin", align: "start", value: "fechaFin" },
-        { text: "Fecha de Pago", align: "start", value: "fechaPago" },
-        { text: "Retencion Isr", align: "start", value: "retencionIsr" },
-        { text: "Ajuste Isr", align: "start", value: "ajusteIsr" },
-        { text: "Subsidio + Ajuste", align: "start", value: "subsidioAjuste" },
-        { text: "A Pagar", align: "start", value: "pagar" },
-        { text: "Fecha Captura", align: "start", value: "fechaCaptura" },
-      ], */
     desserts: [],
     editedItem: [
       {
@@ -234,7 +221,7 @@ export default {
       this.desserts.length = "";
       axios.get("http://localhost:8082/Finalizado").then((response) => {
         this.result = response.data.data;
-        console.log(response.data);
+        //console.log(response.data);
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
             resultado: response.data[i].resultado,
@@ -267,13 +254,12 @@ export default {
             xml: this.editedItem.xml,
             fechaFinalizado: this.dateFechaFin,
             observaciones: this.editedItem.observaciones,
-            timbradoEntity: {    "idTimbrado"  : this.idTimbrado }
+            timbradoEntity: { "idTimbrado": this.idTimbrado }
           })
           .then((response) => {
             this.getMapping();
             this.close();
-            console.log(response.data);
-            console.log(resultado);
+            // console.log(response.data);
           });
       }
     },

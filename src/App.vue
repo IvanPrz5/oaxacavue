@@ -3,7 +3,7 @@
     <v-main>
       <CapitalH />
       <Timbrado />
-      <Finalizado />
+      <!-- <Finalizado /> -->
     </v-main>
   </v-app>
 </template>
