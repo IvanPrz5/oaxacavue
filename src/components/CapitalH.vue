@@ -20,12 +20,10 @@
                   </template>
                   <v-date-picker v-model="search" @input="menu1 = false" no-title scrollable></v-date-picker>
                 </v-menu>
-                <!-- <v-text-field v-model="search" append-icon="mdi-magnify" label="Buscar" hide-details>
-                </v-text-field> -->
               </template>
               <v-card>
                 <v-card-title>
-                  <span class="text-h5">Guardar Registro</span>
+                  <span class="text-h5">{{ formTitle }}</span>
                 </v-card-title>
                 <v-card-text>
                   <v-container>
@@ -76,13 +74,13 @@
                             required outlined></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field @keypress="onlyNumber" label="Subsidio + Ajuste de Subsidio"
-                            v-model="editedItem.subsidio" required dense outlined>{{ calculaPago }}</v-text-field>
+                          <v-text-field @keypress="onlyNumber" label="Subsidio" v-model="editedItem.subsidioAjuste" dense
+                            required outlined></v-text-field>
                         </v-col>
                       </v-row>
                       <div>
                         <v-text-field @keypress="onlyNumber" label="A Pagar" v-model="editedItem.pagar" readonly
-                          required></v-text-field>
+                          required>{{ calculaPago }}</v-text-field>
                       </div>
                       <v-row v-show="false" class="main-div">
                         <v-col cols="12" md="4">
@@ -96,6 +94,7 @@
                           </v-menu>
                         </v-col>
                       </v-row>
+                      <input type="text" v-show="false" v-model="editedItem.id" />
                     </v-form>
                   </v-container>
                 </v-card-text>
@@ -110,7 +109,6 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
-            
           </template>
         </v-toolbar>
       </template>
@@ -144,19 +142,24 @@
           <td>{{ item.subsidioAjuste }}</td>
           <td>{{ item.pagar }}</td>
           <td>
-            <v-btn class="mr-3" elevation="1" color="#C4AD2B" fab dark tile x-small @click="agregarTimbrado(item.id)">
+            <v-btn class="mr-3" elevation="1" color="orange" fab dark tile x-small @click="agregarTimbrado(item.id)">
               <v-icon small> mdi-bell </v-icon>
             </v-btn>
-            <v-dialog v-model="dialog2" max-width="700px">
-              <FormTimbrado :idCapitalH="item.id" @cerrar="close" />
-            </v-dialog>
+            <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item)">
+              <v-icon small> mdi-pencil </v-icon>
+            </v-btn>
           </td>
         </tr>
+        <template>
+          <v-dialog v-model="dialogTimbrado" max-width="700px">
+            <FormTimbrado :idCapitalH="idCapitalH" @closeCompTim="close" />
+          </v-dialog>
+        </template>
       </tbody>
     </v-simple-table>
   </v-container>
 </template>
-
+<!-- :idCapitalH="item.id" -->
 <script>
 import axios from "axios";
 import FormTimbrado from "./FormTimbrado.vue";
@@ -164,29 +167,26 @@ import FormTimbrado from "./FormTimbrado.vue";
 export default {
   name: "CapitalH",
   components: {
-    FormTimbrado
+    FormTimbrado,
   },
   data: () => ({
-    concepto: "",
     dialog: false,
-    dialog2: false,
+    dialogTimbrado: false,
     search: "",
     numberRules: [
       (value) => value > 0 || "campo requerido",
       (value) => value > 0 || "El valor debe ser mayor a cero",
       (v) => !!v || "Name is required",
     ],
+    idCapitalH: "",
     result: [],
     menu1: false,
     menu: false,
     dates: [],
     dateFechaPago: "",
-    dateFechaCaptura: new Date(
-      Date.now() - new Date().getTimezoneOffset() * 60000
-    )
-      .toISOString()
-      .substr(0, 10),
+    dateFechaCaptura: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
     desserts: [],
+    editedIndex: -1,
     editedItem: [
       {
         id: "",
@@ -207,7 +207,15 @@ export default {
   created() {
     this.getMapping();
   },
+  watch: {
+    dialog(val) {
+      val || this.close();
+    }
+  },
   computed: {
+    formTitle() {
+      return this.editedIndex === -1 ? "Agregar" : "Editar"
+    },
     computedDateFormatted() {
       return this.formatDate(this.date);
     },
@@ -218,20 +226,33 @@ export default {
       if (
         this.editedItem.retencionIsr != null &&
         this.editedItem.ajusteIsr != null &&
-        this.editedItem.subsidio != null
+        this.editedItem.subsidioAjuste != null
       ) {
         this.editedItem.pagar =
           this.editedItem.retencionIsr -
           this.editedItem.ajusteIsr -
-          this.editedItem.subsidio;
+          this.editedItem.subsidioAjuste;
         return (this.editedItem.pagar = this.editedItem.pagar.toFixed(2));
+      } else { }
+      if (
+        this.editedItem.retencionIsr != null &&
+        this.editedItem.ajusteIsr != null
+      ) {
+        this.editedItem.pagar = this.editedItem.retencionIsr - this.editedItem.ajusteIsr;
+        return (this.editedItem.pagar = this.editedItem.pagar.toFixed(2));
+      } else { }
+      if (
+        this.editedItem.retencionIsr != null
+      ) {
+        this.editedItem.pagar = this.editedItem.retencionIsr
+        return (this.editedItem.pagar);
       }
     },
   },
   methods: {
     agregarTimbrado(id) {
-      console.log(id);
-      this.dialog2 = true;
+      this.dialogTimbrado = true;
+      this.idCapitalH = id;
     },
     onlyNumber($event) {
       let keyCode = $event.keyCode ? $event.keyCode : $event.which;
@@ -262,7 +283,7 @@ export default {
       this.desserts.length = "";
       axios.get("http://localhost:8082/CapitalHumano").then((response) => {
         this.result = response.data.data;
-        //console.log(response.data);
+        console.log(response.data);
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
             id: response.data[i].id,
@@ -281,8 +302,28 @@ export default {
         }
       });
     },
+
     saveData: function () {
-      if (this.editedItem.concepto != null) {
+      if (this.editedIndex > -1) {
+        axios
+          .put("http://localhost:8082/CapitalHumano/" + this.editedItem.id, {
+            concepto: this.editedItem.concepto,
+            fondo: this.editedItem.fondo,
+            numeroOficio: this.editedItem.numeroOficio,
+            fechaInicio: this.dates[0],
+            fechaFin: this.dates[1],
+            fechaPago: this.dateFechaPago,
+            retencionIsr: this.editedItem.retencionIsr,
+            ajusteIsr: this.editedItem.ajusteIsr,
+            subsidioAjuste: this.editedItem.subsidioAjuste,
+            pagar: this.editedItem.pagar,
+            fechaCaptura: this.dateFechaCaptura,
+          })
+          .then(() => {
+            this.getMapping();
+            this.close();
+          });
+      } else {
         axios
           .post("http://localhost:8082/CapitalHumano", {
             concepto: this.editedItem.concepto,
@@ -293,19 +334,25 @@ export default {
             fechaPago: this.dateFechaPago,
             retencionIsr: this.editedItem.retencionIsr,
             ajusteIsr: this.editedItem.ajusteIsr,
-            subsidioAjuste: this.editedItem.subsidio,
+            subsidioAjuste: this.editedItem.subsidioAjuste,
             pagar: this.editedItem.pagar,
             fechaCaptura: this.dateFechaCaptura,
           })
-          .then((response) => {
+          .then(() => {
             this.getMapping();
             this.close();
           });
       }
     },
+    editItem(item) {
+      // console.log(item)
+      this.editedIndex = this.desserts.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
     close() {
-      console.log("asdsa")
       this.dialog = false;
+      this.dialogTimbrado = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;

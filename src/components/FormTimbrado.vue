@@ -1,5 +1,5 @@
 <template>
-  <v-card v-model="dialog2">
+  <v-card>
     <v-card-title>
       <span class="text-h5">Agregar Timbrado</span>
     </v-card-title>
@@ -15,8 +15,8 @@
                 outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Total de Empleados" v-model="editedItem.totalEmpleados" required dense
-                outlined></v-text-field>
+              <v-text-field @keypress="onlyNumber" label="Total de Empleados" v-model="editedItem.totalEmpleados"
+                required dense outlined></v-text-field>
             </v-col>
           </v-row>
           <v-row class="calendar-div">
@@ -30,41 +30,43 @@
               </v-menu>
             </v-col>
             <v-col>
-              <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                offset-y min-width="auto">
+              <v-menu v-model="menuFPago" :close-on-content-click="false" :nudge-right="40"
+                transition="scale-transition" offset-y min-width="auto">
                 <template v-slot:activator="{ on, attrs }">
                   <v-text-field v-model="dateFechaPago" label="Fecha De Pago" prepend-icon="mdi-calendar" readonly
                     required v-bind="attrs" v-on="on"></v-text-field>
                 </template>
-                <v-date-picker v-model="dateFechaPago" @input="menu = false" no-title scrollable></v-date-picker>
+                <v-date-picker v-model="dateFechaPago" @input="menuFPago = false" no-title scrollable></v-date-picker>
               </v-menu>
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-text-field label="SNFC" v-model="editedItem.descripcionSNFC" dense required outlined></v-text-field>
+              <v-select label="SNFC" v-model="editedItem.descripcionSNFC" item-text="descripcion" item-value="idSNFC" @change="getSNFC" :items="snfc" dense outlined></v-select>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Estatus Timbrado" v-model="editedItem.descripcionStatus" dense required
-                outlined></v-text-field>
+              <v-select label="Estatus Timbrado" v-model="editedItem.descripcionStatus" item-text="descripcion" item-value="idStatus" @change="getStatus" :items="status" dense outlined></v-select>
             </v-col>
             <v-col>
-              <v-menu v-model="menu2" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                offset-y min-width="auto">
+              <v-menu v-model="menuFSubida" :close-on-content-click="false" :nudge-right="40"
+                transition="scale-transition" offset-y min-width="auto">
                 <template v-slot:activator="{ on, attrs }">
                   <v-text-field v-model="dateFechaSubida" label="Fecha De Subida" prepend-icon="mdi-calendar" readonly
                     required v-bind="attrs" v-on="on"></v-text-field>
                 </template>
-                <v-date-picker v-model="dateFechaSubida" @input="menu2 = false" no-title scrollable></v-date-picker>
+                <v-date-picker v-model="dateFechaSubida" @input="menuFSubida = false" no-title
+                  scrollable></v-date-picker>
               </v-menu>
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-text-field label="Importe Isr" v-model="editedItem.importeIsr" dense required outlined></v-text-field>
+              <v-text-field @keypress="onlyNumber" label="Importe Isr" v-model="editedItem.importeIsr" dense required
+                outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Neto" v-model="editedItem.neto" dense required outlined></v-text-field>
+              <v-text-field @keypress="onlyNumber" label="Neto" v-model="editedItem.neto" dense required
+                outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
               <v-text-field label="Documento Contable" v-model="editedItem.documentoContable" dense required
@@ -73,19 +75,19 @@
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-text-field label="Número" v-model="editedItem.numero" dense required outlined></v-text-field>
+              <v-text-field @keypress="onlyNumber" label="Número" v-model="editedItem.numero" dense required
+                outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Número de Ejecuciones" v-model="editedItem.numEjecuciones" dense required
-                outlined></v-text-field>
+              <v-text-field @keypress="onlyNumber" label="Número de Ejecuciones" v-model="editedItem.numEjecuciones"
+                dense required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
               <v-text-field label="Nómina" v-model="editedItem.nomina" dense required outlined></v-text-field>
             </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field label="Id Capital" v-model="editedItem.idCapitalH" dense required outlined></v-text-field>
+            <v-col v-show="false" cols="12" md="4">
+              <v-text-field label="Id Capital" v-model="idCapitalH" dense required outlined></v-text-field>
             </v-col>
-            {{idCapitalH}}
           </v-row>
           <v-row>
             <v-col cols="12">
@@ -98,7 +100,9 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn color="error darken-1" text @click="close"> Cancelar </v-btn>
+      <v-btn color="error darken-1" text @click="closeTimbrado">
+        Cancelar
+      </v-btn>
       <v-btn color="blue darken-1" text @click="saveData"> Guardar </v-btn>
     </v-card-actions>
   </v-card>
@@ -112,30 +116,17 @@ export default {
   components: {
     // Calendario,
   },
-  props:
-    { idCapitalH : String }
-  ,
+  props: { idCapitalH: "" },
   data: () => ({
-    concepto: "",
-    dialog2: false,
     search: "",
-    numberRules: [
-      (value) => value > 0 || "campo requerido",
-      (value) => value > 0 || "El valor debe ser mayor a cero",
-      (v) => !!v || "Name is required",
-    ],
-    result: [],
-    menu: false,
-    menu1: false,
-    menu2: false,
+    result: {},
+    snfc: [],
+    status:[],
     dates: [],
+    menuFPago: false,
     dateFechaPago: "",
+    menuFSubida: false,
     dateFechaSubida: "",
-    dateFechaCaptura: new Date(
-      Date.now() - new Date().getTimezoneOffset() * 60000
-    )
-      .toISOString()
-      .substr(0, 10),
     desserts: [],
     editedItem: [
       {
@@ -154,8 +145,16 @@ export default {
         observaciones: "",
       },
     ],
+    numberRules: [
+      (value) => value > 0 || "campo requerido",
+      (value) => value > 0 || "El valor debe ser mayor a cero",
+      (v) => !!v || "Name is required",
+    ],
   }),
-
+  created(){
+    this.getSNFC();
+    this.getStatus();
+  },
   computed: {
     computedDateFormatted() {
       return this.formatDate(this.date);
@@ -189,24 +188,24 @@ export default {
         $event.preventDefault();
       }
     },
-    formatDate(date) {
-      if (!date) return null;
-
-      const [year, month, day] = date.split("-");
-      return `${month}/${day}/${year}`;
-    },
-    parseDate(date) {
-      if (!date) return null;
-
-      const [month, day, year] = date.split("/");
-      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    },
     showFecha() {
       this.dateFechaPago = new Date(
         Date.now() - new Date().getTimezoneOffset() * 60000
       )
         .toISOString()
         .substr(0, 10);
+    },
+    getSNFC(){
+      axios.get("http://localhost:8082/SNFC").then((response) => {
+        this.result = response.data
+        this.snfc = this.result;
+      });
+    },
+    getStatus(){
+      axios.get("http://localhost:8082/Status").then((response) => {
+        this.result = response.data
+        this.status = this.result;
+      });
     },
     saveData: function () {
       if (this.editedItem.archivo != null) {
@@ -229,19 +228,21 @@ export default {
             numero: this.editedItem.numero,
             numEjecuciones: this.editedItem.numEjecuciones,
             nomina: this.editedItem.nomina,
-            capitalHEntity: { id: this.editedItem.idCapitalH },
+            capitalHEntity: { id: this.idCapitalH },
             observaciones: this.editedItem.observaciones,
           })
-          .then((response) => {
-            //this.getMapping();
-            //this.close();
-            this.$emit("cerrar");
-            //console.log(response.data);
+          .then(() => {
+            this.$emit("closeCompTim");
           });
       }
     },
-    close() {
-      console.log("asdasd")
+    editItem(id){
+      this.editedIndex = this.desserts.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+    closeTimbrado() {
+      this.$emit("closeCompTim");
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
