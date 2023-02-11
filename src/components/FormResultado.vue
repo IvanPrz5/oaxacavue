@@ -1,0 +1,172 @@
+<template>
+  <v-card>
+    <v-card-title>
+      <span class="text-h5">Agregar Resultado</span>
+    </v-card-title>
+    <v-card-text>
+      <v-container>
+        <v-form ref="form" lazy-validation>
+          <v-row class="form-calendar">
+            <v-col cols="12" md="4">
+              <v-text-field label="Resultado" v-model="editedItem.resultado" required dense outlined></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field label="Exitosos" v-model="editedItem.exito" required dense outlined></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field label="Fallidos" v-model="editedItem.fallidos" required dense outlined></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" md="4">
+              <v-text-field label="Isr Timbrado" v-model="editedItem.isrTimbrado" dense required
+                outlined></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field label="Descarga(URL)" v-model="editedItem.urlDescarga" dense required
+                outlined></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field label="PDF" v-model="editedItem.pdf" dense required outlined></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" md="4">
+              <v-text-field label="QR" v-model="editedItem.qr" dense required outlined></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field label="XML" v-model="editedItem.xml" dense required outlined></v-text-field>
+            </v-col>
+          </v-row>
+          <div>
+            <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
+              offset-y min-width="auto">
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field v-model="dateFechaFin" label="Fecha Fin" prepend-icon="mdi-calendar" readonly required
+                  v-bind="attrs" v-on="on"></v-text-field>
+              </template>
+              <v-date-picker v-model="dateFechaFin" @input="menu = false" no-title scrollable></v-date-picker>
+            </v-menu>
+          </div>
+          <v-row>
+            <v-col cols="12">
+              <v-textarea label="Observaciones" v-model="editedItem.observaciones" name="input-7-4"
+                outlined></v-textarea>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-container>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn color="error darken-1" text @click="closeResultado"> Cancelar </v-btn>
+      <v-btn color="blue darken-1" text @click="saveData"> Guardar </v-btn>
+    </v-card-actions>
+  </v-card>
+</template>
+
+<script>
+import axios from "axios";
+
+export default {
+  name: "Resultado",
+  components: {
+    // Calendario,
+  },
+  props:{ idTimbrado: "" },
+  data: () => ({
+    concepto: "",
+    dialog: false,
+    search: "",
+    result: [],
+    menu: false,
+    dateFechaFin: "",
+    desserts: [],
+    editedItem: [
+      {
+        resultado: "",
+        exito: "",
+        fallidos: "",
+        isrTimbrado: "",
+        urlDescarga: "",
+        pdf: "",
+        qr: "",
+        xml: "",
+        observaciones: "",
+      },
+    ],
+    numberRules: [
+      (value) => value > 0 || "campo requerido",
+      (value) => value > 0 || "El valor debe ser mayor a cero",
+      (v) => !!v || "Name is required",
+    ],
+  }),
+  created() {
+    // this.getMapping();
+  },
+  computed: {
+    computedDateFormatted() {
+      return this.formatDate(this.date);
+    },
+    dateRangeText() {
+      return this.dates.join(" ~ ");
+    },
+  },
+  methods: {
+    onlyNumber($event) {
+      let keyCode = $event.keyCode ? $event.keyCode : $event.which;
+      if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) {
+        // 46 is dot
+        $event.preventDefault();
+      }
+    },
+    formatDate(date) {
+      if (!date) return null;
+
+      const [year, month, day] = date.split("-");
+      return `${month}/${day}/${year}`;
+    },
+    parseDate(date) {
+      if (!date) return null;
+
+      const [month, day, year] = date.split("/");
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    },
+    showFecha() {
+      this.dateFechaPago = new Date(
+        Date.now() - new Date().getTimezoneOffset() * 60000
+      )
+        .toISOString()
+        .substr(0, 10);
+    },
+    saveData: function () {
+      if (this.editedItem.resultado != null) {
+        axios
+          .post("http://localhost:8082/Finalizado", {
+            resultado: this.editedItem.resultado,
+            exito: this.editedItem.exito,
+            fallidos: this.editedItem.fallidos,
+            isrTimbrado: this.editedItem.isrTimbrado,
+            urlDescarga: this.editedItem.urlDescarga,
+            pdf: this.editedItem.pdf,
+            qr: this.editedItem.qr,
+            xml: this.editedItem.xml,
+            fechaFinalizado: this.dateFechaFin,
+            observaciones: this.editedItem.observaciones,
+            timbradoEntity: { id: this.idTimbrado }
+          })
+          .then(() => {
+            this.$emit("closeCompRes")
+          });
+      }
+    },
+    closeResultado() {
+      this.$emit("closeCompRes")
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
+  },
+};
+</script>

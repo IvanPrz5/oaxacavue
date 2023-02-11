@@ -42,10 +42,10 @@
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-select label="SNFC" v-model="editedItem.descripcionSNFC" item-text="descripcion" item-value="idSNFC" @change="getSNFC" :items="snfc" dense outlined></v-select>
+              <v-select label="SNFC" v-model="editedItem.descripcionSNFC" item-text="descripcion" item-value="id" @change="getSNFC" :items="snfc" dense outlined></v-select>
             </v-col>
             <v-col cols="12" md="4">
-              <v-select label="Estatus Timbrado" v-model="editedItem.descripcionStatus" item-text="descripcion" item-value="idStatus" @change="getStatus" :items="status" dense outlined></v-select>
+              <v-select label="Estatus Timbrado" v-model="editedItem.descripcionStatus" item-text="descripcion" item-value="id" @change="getStatus" :items="status" dense outlined></v-select>
             </v-col>
             <v-col>
               <v-menu v-model="menuFSubida" :close-on-content-click="false" :nudge-right="40"
@@ -112,7 +112,7 @@
 import axios from "axios";
 
 export default {
-  name: "CapitalH",
+  name: "FormTimbrado",
   components: {
     // Calendario,
   },
@@ -128,6 +128,7 @@ export default {
     menuFSubida: false,
     dateFechaSubida: "",
     desserts: [],
+    editedIndex: -1,
     editedItem: [
       {
         archivo: "",
@@ -217,9 +218,9 @@ export default {
             fechaInicio: this.dates[0],
             fechaFin: this.dates[1],
             fechaPago: this.dateFechaPago,
-            catalogoSNFCEntity: { idSNFC: this.editedItem.descripcionSNFC },
+            catalogoSNFCEntity: { id: this.editedItem.descripcionSNFC },
             catalogoStatusEntity: {
-              idStatus: this.editedItem.descripcionStatus,
+              id: this.editedItem.descripcionStatus,
             },
             fechaSubida: this.dateFechaSubida,
             importeIsr: this.editedItem.importeIsr,
@@ -235,11 +236,6 @@ export default {
             this.$emit("closeCompTim");
           });
       }
-    },
-    editItem(id){
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
     },
     closeTimbrado() {
       this.$emit("closeCompTim");

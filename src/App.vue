@@ -3,7 +3,7 @@
     <v-main>
       <CapitalH />
       <Timbrado />
-      <!-- <Finalizado /> -->
+      <Resultado />
     </v-main>
   </v-app>
 </template>
@@ -11,14 +11,14 @@
 <script>
 import CapitalH from "./components/CapitalH.vue";
 import Timbrado from "./components/Timbrado.vue";
-import Finalizado from "./components/Finalizado.vue";
+import Resultado from "./components/Resultado.vue";
 
 export default {
   name: "App",
   components: {
     CapitalH,
     Timbrado,
-    Finalizado,
+    Resultado,
   },
   data: () => ({
     //

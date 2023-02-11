@@ -1,6 +1,6 @@
 <template>
   <v-container class="container">
-    <v-simple-table :search="search" class="elevation-1">
+    <v-data-table :headers="headers" :items="desserts" :search="search" class="elevation-1">
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title class="title">Timbrados</v-toolbar-title>
@@ -11,80 +11,49 @@
                 <v-menu v-model="menu1" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
                   offset-y min-width="auto">
                   <template v-slot:activator="{ on, attrs }">
-                    <v-text-field v-model="search" label="Fecha De Pago" prepend-icon="mdi-calendar" readonly
-                      v-bind="attrs" v-on="on" hide-details></v-text-field>
+                    <v-text-field v-model="search" label="Buscar" prepend-icon="mdi-calendar" readonly v-bind="attrs"
+                      v-on="on" hide-details></v-text-field>
                   </template>
                   <v-date-picker v-model="search" @input="menu1 = false" no-title scrollable></v-date-picker>
                 </v-menu>
               </template>
+              <FormTimbrado @closeCompTim="close" />
             </v-dialog>
           </template>
         </v-toolbar>
       </template>
-      <thead>
-        <tr>
-          <th class="text-left">Archivo</th>
-          <th class="text-left">Archivo Timbrado</th>
-          <th class="text-left">Empleados</th>
-          <th class="text-left">Fecha Inicio</th>
-          <th class="text-left">Fecha Fin</th>
-          <th class="text-left">Fecha Pago</th>
-          <th class="text-left">SNFC</th>
-          <th class="text-left">Estatus Timbrado</th>
-          <th class="text-left">Fecha de Subida</th>
-          <th class="text-left">Importe Isr</th>
-          <th class="text-left">Neto</th>
-          <th class="text-left">Documento Contable</th>
-          <th class="text-left">Número</th>
-          <th class="text-left">Número de Ejecuciones</th>
-          <th class="text-left">Nómina</th>
-          <th class="text-left">Observaciones</th>
-          <th class="text-left">Opciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in desserts" :key="item.idTimbrado">
-          <td v-show="false">{{ item.id }}</td>
-          <td v-show="false">{{ item.idTimbrado }}</td>
-          <td>{{ item.archivo }}</td>
-          <td>{{ item.archivoTimbrar }}</td>
-          <td>{{ item.totalEmpleados }}</td>
-          <td>{{ item.fechaInicio }}</td>
-          <td>{{ item.fechaFin }}</td>
-          <td>{{ item.fechaPago }}</td>
-          <td>{{ item.descripcionSNFC }}</td>
-          <td>{{ item.descripcionStatus }}</td>
-          <td>{{ item.fechaSubida }}</td>
-          <td>{{ item.importeIsr }}</td>
-          <td>{{ item.neto }}</td>
-          <td>{{ item.documentoContable }}</td>
-          <td>{{ item.numero }}</td>
-          <td>{{ item.numEjecuciones }}</td>
-          <td>{{ item.nomina }}</td>
-          <td>{{ item.observaciones }}</td>
-          <td>
-            <v-btn class="mr-3" elevation="1" color="indigo" fab dark tile x-small @click="agregarFinalizado(item.idTimbrado)">
-              <v-icon small> mdi-plus </v-icon>
-            </v-btn>
-          </td>
-        </tr>
-      </tbody>
-    </v-simple-table>
+      <template v-slot:[`item.actions`]="{ item }">
+        <v-btn class="mr-3" elevation="1" color="orange" fab dark tile x-small @click="agregarResultado(item.id)">
+          <v-icon small> mdi-bell </v-icon>
+        </v-btn>
+        <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item)">
+          <v-icon small> mdi-pencil </v-icon>
+        </v-btn>
+      </template>
+    </v-data-table>
+    <v-dialog v-model="dialogResultado" max-width="700px">
+      <FormResultado :idTimbrado="idTimbrado" @closeCompRes="close" />
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
 import axios from "axios";
+import FormResultado from "./FormResultado.vue";
+import FormTimbrado from "./FormTimbrado.vue";
 
 export default {
-  name: "CapitalH",
+  name: "Timbrado",
   components: {
-    // Calendario,
+    FormResultado,
+    FormTimbrado
   },
   data: () => ({
     concepto: "",
     dialog: false,
+    dialogResultado: false,
     search: "",
+    idTimbrado: "",
     numberRules: [
       (value) => value > 0 || "campo requerido",
       (value) => value > 0 || "El valor debe ser mayor a cero",
@@ -103,8 +72,29 @@ export default {
       .toISOString()
       .substr(0, 10),
     desserts: [],
+    headers: [
+      { text: "ID", align: "start", value: "id" },
+      { text: "Archivo", value: "archivo" },
+      { text: "Archivo Timbrar", value: "archivoTimbrar" },
+      { text: "Empleados", value: "totalEmpleados" },
+      { text: "Fecha de Inicio", value: "fechaInicio" },
+      { text: "Fecha Fin", value: "fechaFin" },
+      { text: "Fecha Pago", value: "fechaPago" },
+      { text: "SNFC", value: "descripcionSNFC" },
+      { text: "ISR", value: "importeIsr" },
+      { text: "Estado", value: "descripcionStatus" },
+      { text: "Fecha Subida", value: "fechaSubida" },
+      { text: "Neto", value: "neto" },
+      { text: "Num. de Ejecuciones", value: "numEjecuciones" },
+      { text: "Observaciones", value: "observaciones" },
+      { text: "Documento Contable", value: "documentoContable" },
+      { text: "Numero", value: "numero" },
+      { text: "Nomina", value: "nomina" },
+      { text: "Opciones", value: "actions" },
+    ],
     editedItem: [
       {
+        id:"",
         archivo: "",
         archivoTimbrar: "",
         totalEmpleados: "",
@@ -133,9 +123,40 @@ export default {
     },
   },
   methods: {
-    agregarFinalizado(id) {
-      console.log(id);
-      this.dialog = true
+    agregarResultado(id) {
+      this.dialogResultado = true;
+      this.idTimbrado = id;
+      console.log(this.idTimbrado)
+    },
+    getMapping() {
+      this.desserts.length = "";
+      axios.get("http://localhost:8082/Timbrado").then((response) => {
+        this.result = response.data.data;
+        // console.log(response.data);
+        for (let i = 0; i < response.data.length; i++) {
+          this.desserts.push({
+            id: response.data[i].id,
+            archivo: response.data[i].archivo,
+            archivoTimbrar: response.data[i].archivoTimbrar,
+            totalEmpleados: response.data[i].totalEmpleados,
+            fechaInicio: response.data[i].fechaInicio,
+            fechaFin: response.data[i].fechaFin,
+            fechaPago: response.data[i].fechaPago,
+            descripcionSNFC:
+              response.data[i].catalogoSNFCEntity.descripcion,
+            importeIsr: response.data[i].importeIsr,
+            descripcionStatus:
+              response.data[i].catalogoStatusEntity.descripcion,
+            fechaSubida: response.data[i].fechaSubida,
+            neto: response.data[i].neto,
+            numEjecuciones: response.data[i].numEjecuciones,
+            observaciones: response.data[i].observaciones,
+            documentoContable: response.data[i].documentoContable,
+            numero: response.data[i].numero,
+            nomina: response.data[i].nomina,
+          });
+        }
+      });
     },
     onlyNumber($event) {
       let keyCode = $event.keyCode ? $event.keyCode : $event.which;
@@ -163,68 +184,14 @@ export default {
         .toISOString()
         .substr(0, 10);
     },
-    getMapping() {
-      this.desserts.length = "";
-      axios.get("http://localhost:8082/Timbrado").then((response) => {
-        this.result = response.data.data;
-        // console.log(response.data);
-        for (let i = 0; i < response.data.length; i++) {
-          this.desserts.push({
-            id: response.data[i].capitalHEntity.id,
-            idTimbrado: response.data[i].idTimbrado,
-            archivo: response.data[i].archivo,
-            archivoTimbrar: response.data[i].archivoTimbrar,
-            totalEmpleados: response.data[i].totalEmpleados,
-            fechaInicio: response.data[i].fechaInicio,
-            fechaFin: response.data[i].fechaFin,
-            fechaPago: response.data[i].fechaPago,
-            descripcionSNFC:
-              response.data[i].catalogoSNFCEntity.descripcion,
-            importeIsr: response.data[i].importeIsr,
-            descripcionStatus:
-              response.data[i].catalogoStatusEntity.descripcion,
-            fechaSubida: response.data[i].fechaSubida,
-            neto: response.data[i].neto,
-            numEjecuciones: response.data[i].numEjecuciones,
-            observaciones: response.data[i].observaciones,
-            documentoContable: response.data[i].documentoContable,
-            numero: response.data[i].numero,
-            nomina: response.data[i].nomina,
-          });
-        }
-      });
-    },
-    saveData: function () {
-      if (this.editedItem.archivo != null) {
-        axios
-          .post("http://localhost:8082/Timbrado", {
-            archivo: this.editedItem.archivo,
-            archivoTimbrar: this.editedItem.archivoTimbrar,
-            totalEmpleados: this.editedItem.totalEmpleados,
-            fechaInicio: this.dates[0],
-            fechaFin: this.dates[1],
-            fechaPago: this.dateFechaPago,
-            catalogoSNFCEntity: { "idSNFC": this.editedItem.descripcionSNFC },
-            catalogoStatusEntity: { "idStatus": this.editedItem.descripcionStatus },
-            fechaSubida: this.dateFechaSubida,
-            importeIsr: this.editedItem.importeIsr,
-            neto: this.editedItem.neto,
-            documentoContable: this.editedItem.documentoContable,
-            numero: this.editedItem.numero,
-            numEjecuciones: this.editedItem.numEjecuciones,
-            nomina: this.editedItem.nomina,
-            capitalHEntity: { "id": this.editedItem.idCapitalH },
-            observaciones: this.editedItem.observaciones,
-          })
-          .then((response) => {
-            this.getMapping();
-            this.close();
-            //console.log(response.data);
-          });
-      }
+    editItem(item) {
+      this.editedIndex = this.desserts.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
     },
     close() {
       this.dialog = false;
+      this.dialogResultado = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;

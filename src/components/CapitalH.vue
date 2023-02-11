@@ -1,6 +1,6 @@
 <template>
   <v-container class="container">
-    <v-simple-table :search="search" class="elevation-1">
+    <v-data-table :headers="headers" :items="desserts" :expanded.sync="expanded" show-expand :search="search" class="elevation-1">
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title class="title">Capital Humano</v-toolbar-title>
@@ -56,8 +56,8 @@
                           <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40"
                             transition="scale-transition" offset-y min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
-                              <v-text-field v-model="dateFechaPago" label="Fecha De Pago" prepend-icon="mdi-calendar"
-                                readonly required v-bind="attrs" v-on="on"></v-text-field>
+                              <v-text-field item-text="fechaPago" v-model="dateFechaPago" label="Fecha De Pago"
+                                prepend-icon="mdi-calendar" readonly required v-bind="attrs" v-on="on"></v-text-field>
                             </template>
                             <v-date-picker v-model="dateFechaPago" @input="menu = false" no-title
                               scrollable></v-date-picker>
@@ -74,8 +74,8 @@
                             required outlined></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field @keypress="onlyNumber" label="Subsidio" v-model="editedItem.subsidioAjuste" dense
-                            required outlined></v-text-field>
+                          <v-text-field @keypress="onlyNumber" label="Subsidio" v-model="editedItem.subsidioAjuste"
+                            dense required outlined></v-text-field>
                         </v-col>
                       </v-row>
                       <div>
@@ -112,73 +112,64 @@
           </template>
         </v-toolbar>
       </template>
-      <thead>
-        <tr>
-          <th class="text-left">ID</th>
-          <th class="text-left">Concepto</th>
-          <th class="text-left">Fondo</th>
-          <th class="text-left">Número de Oficio</th>
-          <th class="text-left">Fecha Inicio</th>
-          <th class="text-left">Fecha Fin</th>
-          <th class="text-left">Fecha Pago</th>
-          <th class="text-left">Retención Isr</th>
-          <th class="text-left">Ajuste Isr</th>
-          <th class="text-left">Subsidio</th>
-          <th class="text-left">Total a Pagar</th>
-          <th class="text-left">Opciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in desserts" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.concepto }}</td>
-          <td>{{ item.fondo }}</td>
-          <td>{{ item.numeroOficio }}</td>
-          <td>{{ item.fechaInicio }}</td>
-          <td>{{ item.fechaFin }}</td>
-          <td>{{ item.fechaPago }}</td>
-          <td>{{ item.retencionIsr }}</td>
-          <td>{{ item.ajusteIsr }}</td>
-          <td>{{ item.subsidioAjuste }}</td>
-          <td>{{ item.pagar }}</td>
-          <td>
-            <v-btn class="mr-3" elevation="1" color="orange" fab dark tile x-small @click="agregarTimbrado(item.id)">
-              <v-icon small> mdi-bell </v-icon>
-            </v-btn>
-            <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item)">
-              <v-icon small> mdi-pencil </v-icon>
-            </v-btn>
-          </td>
-        </tr>
-        <template>
-          <v-dialog v-model="dialogTimbrado" max-width="700px">
-            <FormTimbrado :idCapitalH="idCapitalH" @closeCompTim="close" />
-          </v-dialog>
-        </template>
-      </tbody>
-    </v-simple-table>
+      <template v-slot:[`item.actions`]="{ item }">
+        <v-btn class="mr-3" elevation="1" color="orange" fab dark tile x-small @click="agregarTimbrado(item.id)">
+          <v-icon small> mdi-bell </v-icon>
+        </v-btn>
+        <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item)">
+          <v-icon small> mdi-pencil </v-icon>
+        </v-btn>
+      </template>
+      <template v-slot:expanded-item="{ headers}">
+        <td :colspan="headers.length">
+        <ItemsTimbrado :idCapitalHa="idCapitalHa" />
+        </td>
+      </template>
+    </v-data-table>
+    <v-dialog v-model="dialogTimbrado" max-width="700px">
+      <FormTimbrado :idCapitalH="idCapitalH" @closeCompTim="close" />
+    </v-dialog>
   </v-container>
 </template>
 <!-- :idCapitalH="item.id" -->
 <script>
 import axios from "axios";
 import FormTimbrado from "./FormTimbrado.vue";
+import ItemsTimbrado from "./ItemsTimbrado.vue";
 
 export default {
   name: "CapitalH",
   components: {
     FormTimbrado,
+    ItemsTimbrado,
   },
   data: () => ({
     dialog: false,
     dialogTimbrado: false,
     search: "",
+    expanded: [],
+    headers: [
+      { text: "ID", align: "start", value: "id" },
+      { text: "Concepto", value: "concepto" },
+      { text: "Fondo", value: "fondo" },
+      { text: "Número de Oficio", value: "numeroOficio" },
+      { text: "Fecha de Inicio", value: "fechaInicio" },
+      { text: "Fecha Fin", value: "fechaFin" },
+      { text: "Fecha Pago", value: "fechaPago" },
+      { text: "Retención Isr", value: "retencionIsr" },
+      { text: "Ajuste Isr", value: "ajusteIsr" },
+      { text: "Subsidio", value: "subsidioAjuste" },
+      { text: "A Pagar", value: "pagar" },
+      { text:"", value:"data-table-expand" },
+      { text: "Opciones", value: "actions" },
+    ],
     numberRules: [
       (value) => value > 0 || "campo requerido",
       (value) => value > 0 || "El valor debe ser mayor a cero",
       (v) => !!v || "Name is required",
     ],
     idCapitalH: "",
+    idCapitalHa: "",
     result: [],
     menu1: false,
     menu: false,
@@ -193,14 +184,10 @@ export default {
         concepto: "",
         fondo: "",
         numeroOficio: "",
-        fechaInicio: "",
-        fechaFin: "",
-        fechaPago: "",
         retencionIsr: "",
         ajusteIsr: "",
         subsidio: "",
         pagar: "",
-        fechaCaptura: "",
       },
     ],
   }),
@@ -232,27 +219,29 @@ export default {
           this.editedItem.retencionIsr -
           this.editedItem.ajusteIsr -
           this.editedItem.subsidioAjuste;
-        return (this.editedItem.pagar = this.editedItem.pagar.toFixed(2));
-      } else { }
+        return (this.editedItem.pagar);
+      }/*  else { }
       if (
         this.editedItem.retencionIsr != null &&
         this.editedItem.ajusteIsr != null
       ) {
         this.editedItem.pagar = this.editedItem.retencionIsr - this.editedItem.ajusteIsr;
-        return (this.editedItem.pagar = this.editedItem.pagar.toFixed(2));
+        return (this.editedItem.pagar);
       } else { }
       if (
         this.editedItem.retencionIsr != null
       ) {
         this.editedItem.pagar = this.editedItem.retencionIsr
         return (this.editedItem.pagar);
-      }
+      } */
     },
   },
   methods: {
     agregarTimbrado(id) {
       this.dialogTimbrado = true;
       this.idCapitalH = id;
+      this.idCapitalHa = id;
+      console.log(this.idCapitalHa)
     },
     onlyNumber($event) {
       let keyCode = $event.keyCode ? $event.keyCode : $event.which;
@@ -283,7 +272,7 @@ export default {
       this.desserts.length = "";
       axios.get("http://localhost:8082/CapitalHumano").then((response) => {
         this.result = response.data.data;
-        console.log(response.data);
+        // console.log(response.data);
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
             id: response.data[i].id,
@@ -302,7 +291,6 @@ export default {
         }
       });
     },
-
     saveData: function () {
       if (this.editedIndex > -1) {
         axios
@@ -345,7 +333,6 @@ export default {
       }
     },
     editItem(item) {
-      // console.log(item)
       this.editedIndex = this.desserts.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
