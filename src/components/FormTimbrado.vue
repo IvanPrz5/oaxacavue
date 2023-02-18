@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title>
-      <span class="text-h5">Agregar Timbrado</span>
+      <span class="text-h5">Timbrar</span>
     </v-card-title>
     <v-card-text>
       <v-container>
@@ -163,23 +163,10 @@ export default {
     dateRangeText() {
       return this.dates.join(" ~ ");
     },
-    calculaPago: function () {
-      if (
-        this.editedItem.retencionIsr != null &&
-        this.editedItem.ajusteIsr != null &&
-        this.editedItem.subsidio != null
-      ) {
-        this.editedItem.pagar =
-          this.editedItem.retencionIsr -
-          this.editedItem.ajusteIsr -
-          this.editedItem.subsidio;
-        return (this.editedItem.pagar = this.editedItem.pagar.toFixed(2));
-      }
-    },
   },
   methods: {
     agregarFinalizado(id) {
-      console.log(id);
+      // console.log(id);
       this.dialog = true;
     },
     onlyNumber($event) {
@@ -197,6 +184,7 @@ export default {
         .substr(0, 10);
     },
     getSNFC(){
+      // console.log(this.idCapitalH);
       axios.get("http://localhost:8082/SNFC").then((response) => {
         this.result = response.data
         this.snfc = this.result;

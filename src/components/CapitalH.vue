@@ -1,6 +1,7 @@
 <template>
   <v-container class="container">
-    <v-data-table :headers="headers" :items="desserts" :expanded.sync="expanded" show-expand :search="search" class="elevation-1">
+    <v-data-table :headers="headers" :items="desserts" :expanded.sync="expanded" show-expand :search="search"
+      class="elevation-1">
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title class="title">Capital Humano</v-toolbar-title>
@@ -43,8 +44,7 @@
                       </v-row>
                       <v-row class="calendar-div">
                         <v-col>
-                          <v-menu :close-on-content-click="false" transition="scale-transition" offset-y
-                            min-width="auto">
+                          <v-menu :close-on-content-click="false" transition="scale-transition" offset-y min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
                               <v-text-field v-model="dateRangeText" label="Fecha De Inicio - Fecha Fin"
                                 prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
@@ -74,8 +74,8 @@
                             required outlined></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field @keypress="onlyNumber" label="Subsidio" v-model="editedItem.subsidioAjuste"
-                            dense required outlined></v-text-field>
+                          <v-text-field @keypress="onlyNumber" label="Subsidio" v-model="editedItem.subsidioAjuste" dense
+                            required outlined></v-text-field>
                         </v-col>
                       </v-row>
                       <div>
@@ -84,8 +84,8 @@
                       </div>
                       <v-row v-show="false" class="main-div">
                         <v-col cols="12" md="4">
-                          <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                            offset-y min-width="auto">
+                          <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y
+                            min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
                               <v-text-field v-model="dateFechaCaptura" label="Fecha De Captura"
                                 prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"
@@ -120,10 +120,10 @@
           <v-icon small> mdi-pencil </v-icon>
         </v-btn>
       </template>
-      <template v-slot:expanded-item="{ headers}">
-        <td :colspan="headers.length">
-        <ItemsTimbrado :idCapitalHa="idCapitalHa" />
-        </td>
+      <template v-slot:expanded-item="{ headers, item }">
+        <v-container :colspan="headers.length">
+          <ItemsTimbrado :idCapitalHa="item.id" />
+        </v-container>
       </template>
     </v-data-table>
     <v-dialog v-model="dialogTimbrado" max-width="700px">
@@ -160,7 +160,7 @@ export default {
       { text: "Ajuste Isr", value: "ajusteIsr" },
       { text: "Subsidio", value: "subsidioAjuste" },
       { text: "A Pagar", value: "pagar" },
-      { text:"", value:"data-table-expand" },
+      { text: "", value: "data-table-expand" },
       { text: "Opciones", value: "actions" },
     ],
     numberRules: [
@@ -169,13 +169,16 @@ export default {
       (v) => !!v || "Name is required",
     ],
     idCapitalH: "",
-    idCapitalHa: "",
     result: [],
     menu1: false,
     menu: false,
     dates: [],
     dateFechaPago: "",
-    dateFechaCaptura: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+    dateFechaCaptura: new Date(
+      Date.now() - new Date().getTimezoneOffset() * 60000
+    )
+      .toISOString()
+      .substr(0, 10),
     desserts: [],
     editedIndex: -1,
     editedItem: [
@@ -197,11 +200,11 @@ export default {
   watch: {
     dialog(val) {
       val || this.close();
-    }
+    },
   },
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? "Agregar" : "Editar"
+      return this.editedIndex === -1 ? "Agregar" : "Editar";
     },
     computedDateFormatted() {
       return this.formatDate(this.date);
@@ -219,21 +222,9 @@ export default {
           this.editedItem.retencionIsr -
           this.editedItem.ajusteIsr -
           this.editedItem.subsidioAjuste;
-        return (this.editedItem.pagar);
-      }/*  else { }
-      if (
-        this.editedItem.retencionIsr != null &&
-        this.editedItem.ajusteIsr != null
-      ) {
-        this.editedItem.pagar = this.editedItem.retencionIsr - this.editedItem.ajusteIsr;
-        return (this.editedItem.pagar);
-      } else { }
-      if (
-        this.editedItem.retencionIsr != null
-      ) {
-        this.editedItem.pagar = this.editedItem.retencionIsr
-        return (this.editedItem.pagar);
-      } */
+        this.editedItem.pagar = this.editedItem.pagar.toFixed(2);
+        return this.editedItem.pagar;
+      }
     },
   },
   methods: {
@@ -241,7 +232,7 @@ export default {
       this.dialogTimbrado = true;
       this.idCapitalH = id;
       this.idCapitalHa = id;
-      console.log(this.idCapitalHa)
+      // console.log(this.idCapitalHa)
     },
     onlyNumber($event) {
       let keyCode = $event.keyCode ? $event.keyCode : $event.which;
