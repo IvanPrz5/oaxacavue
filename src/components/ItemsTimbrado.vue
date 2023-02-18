@@ -57,15 +57,17 @@ export default {
     desserts: [],
     result: [],
   }),
+  watch:{
+    
+  },
   created(){
     this.getMapping();
   },
   methods: {
     getMapping() {
-      // console.log(this.idCapitalHa);
-      axios.get("http://localhost:8082/Timbrado").then((response) => {
+      console.log(this.idCapitalHa);
+      axios.get("http://localhost:8082/Timbrado/dataCapital/" + this.idCapitalHa).then((response) => {
         this.result = response.data.data;
-        console.log(response.data);
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
             id: response.data[i].capitalHEntity.id,
