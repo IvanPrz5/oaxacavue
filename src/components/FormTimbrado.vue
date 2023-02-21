@@ -104,19 +104,25 @@
         Cancelar
       </v-btn>
       <v-btn color="blue darken-1" text @click="saveData"> Guardar </v-btn>
+      <prueba text="prueba" @click="putData" />
     </v-card-actions>
   </v-card>
 </template>
 
 <script>
 import axios from "axios";
+import prueba from './prueba.vue';
 
 export default {
   name: "FormTimbrado",
   components: {
-    // Calendario,
+    prueba
   },
-  props: { idCapitalH: "" },
+  props: { 
+    idCapitalH: "",
+    idTimbradoForm: "",
+    text: "",
+  },
   data: () => ({
     search: "",
     result: {},
@@ -153,6 +159,7 @@ export default {
     ],
   }),
   created(){
+    this.getMapping();
     this.getSNFC();
     this.getStatus();
   },
@@ -194,7 +201,40 @@ export default {
       axios.get("http://localhost:8082/Status").then((response) => {
         this.result = response.data
         this.status = this.result;
+        
       });
+    },
+    getMapping(){
+      if(this.idTimbradoForm === undefined){
+        console.log("erro");
+      }else{
+        console.log(this.idTimbradoForm);
+      try {
+        axios.get("http://localhost:8082/Timbrado/" + this.idTimbradoForm ).then((response) => {
+        this.editedItem.archivo = response.data.archivo;
+        this.editedItem.archivoTimbrar = response.data.archivoTimbrar;
+        this.editedItem.totalEmpleados = response.data.totalEmpleados;
+        // this.dateRangeText = response.data.fechaInicio;
+        // this.dateRangeText = response.data.fechaFin;
+        this.dateFechaPago = response.data.fechaPago;
+        this.editedItem.descripcionSNFC = response.data.catalogoSNFCEntity.descripcion;
+        this.editedItem.descripcionStatus = response.data.catalogoStatusEntity.descripcion;
+        this.dateFechaSubida = response.data.fechaSubida;
+        this.editedItem.importeIsr = response.data.importeIsr;
+        this.editedItem.neto = response.data.neto;
+        this.editedItem.documentoContable = response.data.documentoContable;
+        this.editedItem.numero = response.data.numero;
+        this.editedItem.numEjecuciones = response.data.numEjecuciones;
+        this.editedItem.nomina = response.data.nomina; 
+        this.editedItem.observaciones = response.data.observaciones; 
+        // this.$emit("prueba");
+      }).catch(error => console.log(error));
+      } catch (error) {
+        console.log("error")
+      }
+      }
+      
+      
     },
     saveData: function () {
       if (this.editedItem.archivo != null) {
@@ -224,6 +264,10 @@ export default {
             this.$emit("closeCompTim");
           });
       }
+    },
+    putData(){
+      console.log(this.idTimbradoForm);
+      // this.$emit("click");
     },
     closeTimbrado() {
       this.$emit("closeCompTim");

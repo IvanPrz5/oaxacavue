@@ -41,6 +41,55 @@
     display: flex;
 }
 
+
+
+
+
+<!--  <v-simple-table style="background-color: #81ACD3">
+    <thead style="background-color: #0BB832">
+      <tr>
+        <th class="text-left">Archivo</th>
+        <th class="text-left">Archivo Timbrado</th>
+        <th class="text-left">Empleados</th>
+        <th class="text-left">Fecha Inicio</th>
+        <th class="text-left">Fecha Fin</th>
+        <th class="text-left">Fecha Pago</th>
+        <th class="text-left">SNFC</th>
+        <th class="text-left">Estatus Timbrado</th>
+        <th class="text-left">Fecha de Subida</th>
+        <th class="text-left">Importe Isr</th>
+        <th class="text-left">Neto</th>
+        <th class="text-left">Documento Contable</th>
+        <th class="text-left">Número</th>
+        <th class="text-left">Número de Ejecuciones</th>
+        <th class="text-left">Nómina</th>
+        <th class="text-left">Observaciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="item in desserts" :key="item.idTimbrado">
+        <td v-show="false">{{ item.id }}</td>
+        <td v-show="false">{{ item.idTimbrado }}</td>
+        <td>{{ item.archivo }}</td>
+        <td>{{ item.archivoTimbrar }}</td>
+        <td>{{ item.totalEmpleados }}</td>
+        <td>{{ item.fechaInicio }}</td>
+        <td>{{ item.fechaFin }}</td>
+        <td>{{ item.fechaPago }}</td>
+        <td>{{ item.descripcionSNFC }}</td>
+        <td>{{ item.descripcionStatus }}</td>
+        <td>{{ item.fechaSubida }}</td>
+        <td>{{ item.importeIsr }}</td>
+        <td>{{ item.neto }}</td>
+        <td>{{ item.documentoContable }}</td>
+        <td>{{ item.numero }}</td>
+        <td>{{ item.numEjecuciones }}</td>
+        <td>{{ item.nomina }}</td>
+        <td>{{ item.observaciones }}</td>
+      </tr>
+    </tbody>
+  </v-simple-table> -->
+
 <thead>
         <tr>
           <th class="text-left">Resultado</th>

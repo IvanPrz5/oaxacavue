@@ -1,77 +1,90 @@
 <template>
-  <v-simple-table style="background-color: #81ACD3">
-    <thead style="background-color: #0BB832">
-      <tr>
-        <th class="text-left">Archivo</th>
-        <th class="text-left">Archivo Timbrado</th>
-        <th class="text-left">Empleados</th>
-        <th class="text-left">Fecha Inicio</th>
-        <th class="text-left">Fecha Fin</th>
-        <th class="text-left">Fecha Pago</th>
-        <th class="text-left">SNFC</th>
-        <th class="text-left">Estatus Timbrado</th>
-        <th class="text-left">Fecha de Subida</th>
-        <th class="text-left">Importe Isr</th>
-        <th class="text-left">Neto</th>
-        <th class="text-left">Documento Contable</th>
-        <th class="text-left">Número</th>
-        <th class="text-left">Número de Ejecuciones</th>
-        <th class="text-left">Nómina</th>
-        <th class="text-left">Observaciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="item in desserts" :key="item.idTimbrado">
-        <td v-show="false">{{ item.id }}</td>
-        <td v-show="false">{{ item.idTimbrado }}</td>
-        <td>{{ item.archivo }}</td>
-        <td>{{ item.archivoTimbrar }}</td>
-        <td>{{ item.totalEmpleados }}</td>
-        <td>{{ item.fechaInicio }}</td>
-        <td>{{ item.fechaFin }}</td>
-        <td>{{ item.fechaPago }}</td>
-        <td>{{ item.descripcionSNFC }}</td>
-        <td>{{ item.descripcionStatus }}</td>
-        <td>{{ item.fechaSubida }}</td>
-        <td>{{ item.importeIsr }}</td>
-        <td>{{ item.neto }}</td>
-        <td>{{ item.documentoContable }}</td>
-        <td>{{ item.numero }}</td>
-        <td>{{ item.numEjecuciones }}</td>
-        <td>{{ item.nomina }}</td>
-        <td>{{ item.observaciones }}</td>
-      </tr>
-    </tbody>
-  </v-simple-table>
+  <v-container>
+    <v-data-table style="background-color: #5DBDB3" :headers="headers" :items="desserts"
+      class="elevation-1" hide-default-footer>
+      <!-- hide-default-footer -->
+      <template v-slot:[`item.actions`]="{ item }">
+        <div class="btn-control">
+          <v-btn class="mr-3" elevation="1" color="orange" fab dark tile x-small @click="agregarResultado(item.id)">
+            <v-icon small> mdi-bell </v-icon>
+          </v-btn>
+          <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item.id)">
+            <v-icon small> mdi-pencil </v-icon>
+          </v-btn>
+        </div>
+      </template>
+    </v-data-table>
+    <v-dialog v-model="dialog" max-width="700px">
+      <FormTimbrado :idTimbradoForm="idTimbradoForm" @closeCompTim="close" />
+    </v-dialog>
+    <v-dialog v-model="dialogResultado" max-width="700px">
+      <FormResultado :idTimbrado="idTimbrado" @closeCompRes="close" />
+    </v-dialog>
+  </v-container>
 </template>
 
 <script>
 import axios from 'axios';
+import FormResultado from './FormResultado.vue';
+import FormTimbrado from './FormTimbrado.vue';
 
 export default {
   name: "ItemsTimbrado",
-  props:{
+  components: {
+    FormTimbrado,
+    FormResultado
+  },
+  props: {
     idCapitalHa: "",
   },
   data: () => ({
-    desserts: [],
+    dialog: false,
     result: [],
+    desserts: [],
+    headers: [
+      { text: "ID", align: "start", value: "id" },
+      { text: "Archivo", value: "archivo" },
+      { text: "Archivo Timbrar", value: "archivoTimbrar" },
+      { text: "Empleados", value: "totalEmpleados" },
+      { text: "Fecha Inicio", value: "fechaInicio" },
+      { text: "Fecha Fin", value: "fechaFin" },
+      { text: "Fecha Pago", value: "fechaPago" },
+      { text: "SNFC", value: "descripcionSNFC" },
+      { text: "ISR", value: "importeIsr" },
+      { text: "Estado", value: "descripcionStatus" },
+      { text: "Fecha Subida", value: "fechaSubida" },
+      { text: "Neto", value: "neto" },
+      { text: "Ejecuciones", value: "numEjecuciones" },
+      { text: "Observaciones", value: "observaciones" },
+      { text: "Documento Contable", value: "documentoContable" },
+      { text: "Numero", value: "numero" },
+      { text: "Nomina", value: "nomina" },
+      { text: "Opciones", value: "actions" },
+    ],
+    dialogResultado: false,
+    idTimbrado: "",
+    idTimbradoForm: "",
   }),
-  watch:{
-    
+  watch: {
+
   },
-  created(){
+  created() {
     this.getMapping();
   },
   methods: {
+    agregarResultado(id) {
+      this.dialogResultado = true;
+      this.idTimbrado = id;
+      console.log(this.idTimbrado);
+    },
     getMapping() {
-      console.log(this.idCapitalHa);
+      // console.log(this.idCapitalHa);
       axios.get("http://localhost:8082/Timbrado/dataCapital/" + this.idCapitalHa).then((response) => {
         this.result = response.data.data;
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
-            id: response.data[i].capitalHEntity.id,
-            idTimbrado: response.data[i].idTimbrado,
+            // id: response.data[i].capitalHEntity.id,
+            id: response.data[i].id,
             archivo: response.data[i].archivo,
             archivoTimbrar: response.data[i].archivoTimbrar,
             totalEmpleados: response.data[i].totalEmpleados,
@@ -93,6 +106,26 @@ export default {
         }
       });
     },
+    editItem(id) {
+      this.idTimbradoForm = id;
+      this.dialog = true;
+      console.log(this.idTimbradoForm);
+    },
+    close() {
+      this.dialog = false;
+      this.dialogResultado = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
+    },
   },
 };
 </script>
+
+<style scoped>
+/* @import "../style/CapitalH.css"; */
+.btn-control {
+  display: flex;
+}
+</style>

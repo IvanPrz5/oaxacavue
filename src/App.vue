@@ -2,7 +2,7 @@
   <v-app>
     <v-main>
       <CapitalH />
-      <Timbrado />
+      <!-- <Timbrado /> -->
       <Resultado />
     </v-main>
   </v-app>

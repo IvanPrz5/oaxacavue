@@ -81,6 +81,7 @@
                       <div>
                         <v-text-field @keypress="onlyNumber" label="A Pagar" v-model="editedItem.pagar" readonly
                           required>{{ calculaPago }}</v-text-field>
+                        <!-- <v-switch v-model="status" label="Status"></v-switch> -->
                       </div>
                       <v-row v-show="false" class="main-div">
                         <v-col cols="12" md="4">
@@ -113,17 +114,22 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-btn class="mr-3" elevation="1" color="orange" fab dark tile x-small @click="agregarTimbrado(item.id)">
-          <v-icon small> mdi-bell </v-icon>
-        </v-btn>
-        <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item)">
-          <v-icon small> mdi-pencil </v-icon>
-        </v-btn>
+        <div class="btn-control">
+          <v-btn class="mr-3" elevation="1" color="orange" fab dark tile x-small @click="agregarTimbrado(item.id)">
+            <v-icon small> mdi-bell </v-icon>
+          </v-btn>
+          <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item)">
+            <v-icon small> mdi-pencil </v-icon>
+          </v-btn>
+          <v-btn class="mr-3" elevation="1" color="error" fab dark tile x-small @click="ocultarFila(item.id)">
+            <v-icon small> mdi-delete </v-icon>
+          </v-btn>
+        </div>
       </template>
       <template v-slot:expanded-item="{ headers, item }">
-        <v-container :colspan="headers.length">
+        <td :colspan="headers.length">
           <ItemsTimbrado :idCapitalHa="item.id" />
-        </v-container>
+        </td>
       </template>
     </v-data-table>
     <v-dialog v-model="dialogTimbrado" max-width="700px">
@@ -132,6 +138,7 @@
   </v-container>
 </template>
 <!-- :idCapitalH="item.id" -->
+
 <script>
 import axios from "axios";
 import FormTimbrado from "./FormTimbrado.vue";
@@ -160,6 +167,7 @@ export default {
       { text: "Ajuste Isr", value: "ajusteIsr" },
       { text: "Subsidio", value: "subsidioAjuste" },
       { text: "A Pagar", value: "pagar" },
+      // { text: "Status", value:"status" },      
       { text: "", value: "data-table-expand" },
       { text: "Opciones", value: "actions" },
     ],
@@ -169,6 +177,7 @@ export default {
       (v) => !!v || "Name is required",
     ],
     idCapitalH: "",
+    status: true,
     result: [],
     menu1: false,
     menu: false,
@@ -186,6 +195,8 @@ export default {
         id: "",
         concepto: "",
         fondo: "",
+        date0: "",
+        date1: "",
         numeroOficio: "",
         retencionIsr: "",
         ajusteIsr: "",
@@ -261,7 +272,7 @@ export default {
     },
     getMapping() {
       this.desserts.length = "";
-      axios.get("http://localhost:8082/CapitalHumano").then((response) => {
+      axios.get("http://localhost:8082/CapitalHumano/dataCapital/true").then((response) => {
         this.result = response.data.data;
         // console.log(response.data);
         for (let i = 0; i < response.data.length; i++) {
@@ -278,6 +289,7 @@ export default {
             subsidioAjuste: response.data[i].subsidioAjuste,
             pagar: response.data[i].pagar,
             fechaCaptura: response.data[i].fechaCaptura,
+            // status: response.data[i].status
           });
         }
       });
@@ -297,6 +309,7 @@ export default {
             subsidioAjuste: this.editedItem.subsidioAjuste,
             pagar: this.editedItem.pagar,
             fechaCaptura: this.dateFechaCaptura,
+            status: this.status,
           })
           .then(() => {
             this.getMapping();
@@ -316,12 +329,23 @@ export default {
             subsidioAjuste: this.editedItem.subsidioAjuste,
             pagar: this.editedItem.pagar,
             fechaCaptura: this.dateFechaCaptura,
+            status: this.status,
           })
           .then(() => {
             this.getMapping();
             this.close();
           });
       }
+    },
+    ocultarFila(id) {
+      let statusFalse = false;
+      axios
+        .put("http://localhost:8082/CapitalHumano/statusCapital/" + id, {
+          status: statusFalse,
+        })
+        .then(() => {
+          this.getMapping();
+        });
     },
     editItem(item) {
       this.editedIndex = this.desserts.indexOf(item);
@@ -341,5 +365,8 @@ export default {
 </script>
 
 <style scoped>
-@import "../style/CapitalH.css";
+/* @import "../style/CapitalH.css"; */
+.btn-control{
+  display: flex;
+}
 </style>
