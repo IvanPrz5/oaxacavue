@@ -1,17 +1,25 @@
 <template>
   <v-container>
     <v-data-table style="background-color: #5DBDB3" :headers="headers" :items="desserts"
-      class="elevation-1" hide-default-footer>
+      class="elevation-1" :expanded.sync="expanded" show-expand hide-default-footer>
       <!-- hide-default-footer -->
       <template v-slot:[`item.actions`]="{ item }">
         <div class="btn-control">
-          <v-btn class="mr-3" elevation="1" color="orange" fab dark tile x-small @click="agregarResultado(item.id)">
-            <v-icon small> mdi-bell </v-icon>
+          <v-btn class="mr-3" elevation="1" color="purple" fab dark tile x-small @click="agregarResultado(item.id)">
+            <v-icon> mdi-check </v-icon>
           </v-btn>
           <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item.id)">
             <v-icon small> mdi-pencil </v-icon>
           </v-btn>
+          <v-btn class="mr-3" elevation="1" color="error" fab dark tile x-small @click="ocultarFila(item.id)">
+            <v-icon small> mdi-delete </v-icon>
+          </v-btn>
         </div>
+      </template>
+      <template v-slot:expanded-item="{ headers, item }">
+        <td :colspan="headers.length">
+          <ItemsResultado :idTimbradoHa="item.id"/>
+        </td>
       </template>
     </v-data-table>
     <v-dialog v-model="dialog" max-width="700px">
@@ -27,19 +35,23 @@
 import axios from 'axios';
 import FormResultado from './FormResultado.vue';
 import FormTimbrado from './FormTimbrado.vue';
+import ItemsResultado from './ItemsResultado.vue';
 
 export default {
   name: "ItemsTimbrado",
   components: {
     FormTimbrado,
-    FormResultado
-  },
+    FormResultado,
+    ItemsResultado
+},
   props: {
     idCapitalHa: "",
+    capitalH: true,
   },
   data: () => ({
     dialog: false,
     result: [],
+    expanded: [],
     desserts: [],
     headers: [
       { text: "ID", align: "start", value: "id" },
@@ -59,6 +71,7 @@ export default {
       { text: "Documento Contable", value: "documentoContable" },
       { text: "Numero", value: "numero" },
       { text: "Nomina", value: "nomina" },
+      { text:"", value: "data-table-expand" },
       { text: "Opciones", value: "actions" },
     ],
     dialogResultado: false,
@@ -75,11 +88,13 @@ export default {
     agregarResultado(id) {
       this.dialogResultado = true;
       this.idTimbrado = id;
-      console.log(this.idTimbrado);
+      this.idTimbradoHa = id;
+      // console.log(this.idTimbradoHa);
     },
     getMapping() {
       // console.log(this.idCapitalHa);
-      axios.get("http://localhost:8082/Timbrado/dataCapital/" + this.idCapitalHa).then((response) => {
+      this.desserts.length = "";
+      axios.get("http://localhost:8082/Timbrado/dataTimbrado/" + this.idCapitalHa + "/true").then((response) => {
         this.result = response.data.data;
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
@@ -106,10 +121,19 @@ export default {
         }
       });
     },
+    ocultarFila(id){
+      let statusFalse = false;
+      // console.log(id);
+      axios.put("http://localhost:8082/Timbrado/statusTimbrado/"+ id, {
+        status : statusFalse,
+      }).then(()=>{
+        this.getMapping();
+      })
+    },
     editItem(id) {
       this.idTimbradoForm = id;
       this.dialog = true;
-      console.log(this.idTimbradoForm);
+      // console.log(this.idTimbradoForm);
     },
     close() {
       this.dialog = false;

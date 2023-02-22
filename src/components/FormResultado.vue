@@ -78,6 +78,7 @@ export default {
     concepto: "",
     dialog: false,
     search: "",
+    status: true,
     result: [],
     menu: false,
     dateFechaFin: "",
@@ -153,7 +154,8 @@ export default {
             xml: this.editedItem.xml,
             fechaFinalizado: this.dateFechaFin,
             observaciones: this.editedItem.observaciones,
-            timbradoEntity: { id: this.idTimbrado }
+            timbradoEntity: { id: this.idTimbrado },
+            status: this.status,
           })
           .then(() => {
             this.$emit("closeCompRes")

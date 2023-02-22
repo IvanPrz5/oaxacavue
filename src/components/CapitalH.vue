@@ -133,7 +133,7 @@
       </template>
     </v-data-table>
     <v-dialog v-model="dialogTimbrado" max-width="700px">
-      <FormTimbrado :idCapitalH="idCapitalH" @closeCompTim="close" />
+      <FormTimbrado :capitalH="capitalH" :idCapitalH="idCapitalH" @closeCompTim="close" />
     </v-dialog>
   </v-container>
 </template>
@@ -151,6 +151,7 @@ export default {
     ItemsTimbrado,
   },
   data: () => ({
+    capitalH:"",
     dialog: false,
     dialogTimbrado: false,
     search: "",
@@ -357,6 +358,7 @@ export default {
       this.dialogTimbrado = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
+        this.dateFechaPago = "";
         this.editedIndex = -1;
       });
     },
