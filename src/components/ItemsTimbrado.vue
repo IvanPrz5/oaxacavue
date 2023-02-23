@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <v-data-table style="background-color: #5DBDB3" :headers="headers" :items="desserts"
-      class="elevation-1" :expanded.sync="expanded" show-expand hide-default-footer>
+    <v-data-table style="background-color: #5DBDB3" :headers="headers" :items="desserts" class="elevation-1"
+      :expanded.sync="expanded" show-expand>
       <!-- hide-default-footer -->
       <template v-slot:[`item.actions`]="{ item }">
         <div class="btn-control">
@@ -18,15 +18,15 @@
       </template>
       <template v-slot:expanded-item="{ headers, item }">
         <td :colspan="headers.length">
-          <ItemsResultado :idTimbradoHa="item.id"/>
+          <ItemsResultado :idTimbradoHa="item.id" />
         </td>
       </template>
     </v-data-table>
     <v-dialog v-model="dialog" max-width="700px">
-      <FormTimbrado :idTimbradoForm="idTimbradoForm" @closeCompTim="close" />
+      <FormTimbrado :timbradoItem="timbradoItem" :idTimbradoForm="idTimbradoForm" @closeCompTim="close" />
     </v-dialog>
     <v-dialog v-model="dialogResultado" max-width="700px">
-      <FormResultado :idTimbrado="idTimbrado" @closeCompRes="close" />
+      <FormResultado :timbradoProp="timbradoProp" :idTimbrado="idTimbrado" @closeCompRes="close" />
     </v-dialog>
   </v-container>
 </template>
@@ -43,13 +43,14 @@ export default {
     FormTimbrado,
     FormResultado,
     ItemsResultado
-},
+  },
   props: {
     idCapitalHa: "",
-    capitalH: true,
   },
   data: () => ({
     dialog: false,
+    timbradoItem: "ItemsProp",
+    timbradoProp: "timbradoProp",
     result: [],
     expanded: [],
     desserts: [],
@@ -57,21 +58,21 @@ export default {
       { text: "ID", align: "start", value: "id" },
       { text: "Archivo", value: "archivo" },
       { text: "Archivo Timbrar", value: "archivoTimbrar" },
-      { text: "Empleados", value: "totalEmpleados" },
       { text: "Fecha Inicio", value: "fechaInicio" },
       { text: "Fecha Fin", value: "fechaFin" },
       { text: "Fecha Pago", value: "fechaPago" },
-      { text: "SNFC", value: "descripcionSNFC" },
-      { text: "ISR", value: "importeIsr" },
-      { text: "Estado", value: "descripcionStatus" },
       { text: "Fecha Subida", value: "fechaSubida" },
+      { text: "SNFC", align: "center", value: "descripcionSNFC" },
+      { text: "Estado", value: "descripcionStatus" },
+      { text: "Empleados", align: "center", value: "totalEmpleados" },
       { text: "Neto", value: "neto" },
-      { text: "Ejecuciones", value: "numEjecuciones" },
+      { text: "ISR", value: "importeIsr" },
+      { text: "Ejecuciones", align: "center", value: "numEjecuciones" },
       { text: "Observaciones", value: "observaciones" },
       { text: "Documento Contable", value: "documentoContable" },
-      { text: "Numero", value: "numero" },
+      { text: "Numero", align: "center", value: "numero" },
       { text: "Nomina", value: "nomina" },
-      { text:"", value: "data-table-expand" },
+      { text: "", value: "data-table-expand" },
       { text: "Opciones", value: "actions" },
     ],
     dialogResultado: false,
@@ -89,10 +90,8 @@ export default {
       this.dialogResultado = true;
       this.idTimbrado = id;
       this.idTimbradoHa = id;
-      // console.log(this.idTimbradoHa);
     },
     getMapping() {
-      // console.log(this.idCapitalHa);
       this.desserts.length = "";
       axios.get("http://localhost:8082/Timbrado/dataTimbrado/" + this.idCapitalHa + "/true").then((response) => {
         this.result = response.data.data;
@@ -121,12 +120,11 @@ export default {
         }
       });
     },
-    ocultarFila(id){
+    ocultarFila(id) {
       let statusFalse = false;
-      // console.log(id);
-      axios.put("http://localhost:8082/Timbrado/statusTimbrado/"+ id, {
-        status : statusFalse,
-      }).then(()=>{
+      axios.put("http://localhost:8082/Timbrado/statusTimbrado/" + id, {
+        status: statusFalse,
+      }).then(() => {
         this.getMapping();
       })
     },

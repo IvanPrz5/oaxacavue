@@ -104,24 +104,23 @@
         Cancelar
       </v-btn>
       <v-btn color="blue darken-1" text @click="saveData"> Guardar </v-btn>
-      <!-- <prueba text="Actualizar" @click="putData" /> -->
     </v-card-actions>
   </v-card>
 </template>
 
 <script>
 import axios from "axios";
-import prueba from './prueba.vue';
 
 export default {
   name: "FormTimbrado",
   components: {
-    prueba
   },
   props: {
     idCapitalH: "",
     idTimbradoForm: "",
     text: "",
+    capitalH: true,
+    timbradoItem: true,
   },
   data: () => ({
     search: "",
@@ -202,12 +201,10 @@ export default {
       axios.get("http://localhost:8082/Status").then((response) => {
         this.result = response.data
         this.statusTable = this.result;
-
       });
     },
     getMapping() {
       if (this.idTimbradoForm !== undefined) {
-        console.log("asd");
         try {
           axios.get("http://localhost:8082/Timbrado/" + this.idTimbradoForm).then((response) => {
             this.editedItem.archivo = response.data.archivo;
@@ -227,12 +224,12 @@ export default {
             // this.$emit("prueba");
           })
         } catch (error) {
-
+          
         }
       }
     },
-    saveData: function () {
-      if (this.editedItem.archivo != null) {
+    saveData() {
+      if(this.capitalH){
         axios
           .post("http://localhost:8082/Timbrado", {
             archivo: this.editedItem.archivo,
@@ -259,37 +256,8 @@ export default {
           .then(() => {
             this.$emit("closeCompTim");
           });
-      }/* else{
-        axios
-          .put("http://localhost:8082/Timbrado/" + this.idTimbradoForm, {
-            archivo: this.editedItem.archivo,
-            archivoTimbrar: this.editedItem.archivoTimbrar,
-            totalEmpleados: this.editedItem.totalEmpleados,
-            fechaInicio: this.dates[0],
-            fechaFin: this.dates[1],
-            fechaPago: this.dateFechaPago,
-            catalogoSNFCEntity: { id: this.editedItem.descripcionSNFC },
-            catalogoStatusEntity: {
-              id: this.editedItem.descripcionStatus,
-            },
-            fechaSubida: this.dateFechaSubida,
-            importeIsr: this.editedItem.importeIsr,
-            neto: this.editedItem.neto,
-            documentoContable: this.editedItem.documentoContable,
-            numero: this.editedItem.numero,
-            numEjecuciones: this.editedItem.numEjecuciones,
-            nomina: this.editedItem.nomina,
-            capitalHEntity: { id: this.idCapitalH },
-            observaciones: this.editedItem.observaciones,
-            status: this.status,
-          })
-          .then(() => {
-            this.$emit("closeCompTim");
-          });
-      } */
-    },
-    putData() {
-      if (this.editedItem.archivo != null) {
+      }else
+      if(this.timbradoItem){
         axios
           .put("http://localhost:8082/Timbrado/" + this.idTimbradoForm, {
             archivo: this.editedItem.archivo,

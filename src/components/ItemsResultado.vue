@@ -2,7 +2,7 @@
   <v-container>
     <v-data-table style="background-color: #6868A7" :headers="headers" :items="desserts" class="elevation-1">
       <template v-slot:[`item.actions`]="{ item }">
-        <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="">
+        <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item.id)">
           <v-icon small> mdi-pencil </v-icon>
         </v-btn>
         <v-btn class="mr-3" elevation="1" color="error" fab dark tile x-small @click="ocultarFila(item.id)">
@@ -10,18 +10,28 @@
           </v-btn>
       </template>
     </v-data-table>
+    <v-dialog v-model="dialogResultado" max-width="700px">
+      <FormResultado resultadoProp="resultadoProp" @closeCompRes="close" :idResultado="idResultado" />
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
 import axios from 'axios';
+import FormResultado from './FormResultado.vue';
 
 export default{
   name: "ItemsResultado",
+  components:{
+    FormResultado,
+  },
   props:{
     idTimbradoHa: "",
   },
   data: () =>({
+    idResultado: "",
+    resultadoProp: "resultadoProp",
+    dialogResultado: false,
     desserts: [],
     headers: [
       { text: "ID", align:"start", value:"id" },
@@ -46,7 +56,6 @@ export default{
       this.desserts.length = "";
       axios.get("http://localhost:8082/Finalizado/dataFinalizado/" + this.idTimbradoHa + "/true").then((response) => {
         this.result = response.data.data;
-        // console.log(response.data);
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
             id: response.data[i].id,
@@ -65,14 +74,25 @@ export default{
         }
       });
     },
+    editItem(id){
+      this.idResultado = id;
+      this.dialogResultado = true;
+    },
     ocultarFila(id){
-      // console.log(id);
       let statusFalse = false;
       axios.put("http://localhost:8082/Finalizado/statusFinalizado/" + id, {
         status : statusFalse,
       }).then(()=>{
         this.getMapping();
       })
+    },
+    close() {
+      this.dialog = false;
+      this.dialogResultado = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      });
     },
   }
 }

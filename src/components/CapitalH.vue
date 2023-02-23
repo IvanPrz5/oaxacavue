@@ -6,14 +6,8 @@
         <v-toolbar flat>
           <v-toolbar-title class="title">Capital Humano</v-toolbar-title>
           <v-divider class="mx-6" inset vertical></v-divider>
-          <template>
-            <v-dialog v-model="dialog" max-width="650px">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn color="success" dark v-bind="attrs" v-on="on">
-                  <v-icon>mdi-plus</v-icon>
-                </v-btn>
-                <v-divider class="mx-6" inset vertical></v-divider>
-                <v-menu v-model="menu1" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
+          <v-combobox v-model="showCalendar" label="Buscar Por Fecha" :items="itemsFechas" hide-details></v-combobox>
+          <v-menu v-if="showCalendar === 'Fecha Inicio a Fecha Fin'" v-model="menu1" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
                   offset-y min-width="auto">
                   <template v-slot:activator="{ on, attrs }">
                     <v-text-field v-model="search" label="Fecha De Pago" prepend-icon="mdi-calendar" readonly
@@ -21,6 +15,13 @@
                   </template>
                   <v-date-picker v-model="search" @input="menu1 = false" no-title scrollable></v-date-picker>
                 </v-menu>
+          <template>
+            <v-dialog v-model="dialog" max-width="650px">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="success" dark v-bind="attrs" v-on="on">
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+                <v-divider class="mx-6" inset vertical></v-divider>
               </template>
               <v-card>
                 <v-card-title>
@@ -151,7 +152,8 @@ export default {
     ItemsTimbrado,
   },
   data: () => ({
-    capitalH:"",
+    showCalendar: "",
+    capitalH: "CapitalProp",
     dialog: false,
     dialogTimbrado: false,
     search: "",
@@ -176,6 +178,10 @@ export default {
       (value) => value > 0 || "campo requerido",
       (value) => value > 0 || "El valor debe ser mayor a cero",
       (v) => !!v || "Name is required",
+    ],
+    itemsFechas: [
+      'Fecha Inicio a Fecha Fin',
+      'Fecha De Pago',
     ],
     idCapitalH: "",
     status: true,
@@ -368,7 +374,7 @@ export default {
 
 <style scoped>
 /* @import "../style/CapitalH.css"; */
-.btn-control{
+.btn-control {
   display: flex;
 }
 </style>

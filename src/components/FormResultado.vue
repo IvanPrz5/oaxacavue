@@ -19,12 +19,10 @@
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-text-field label="Isr Timbrado" v-model="editedItem.isrTimbrado" dense required
-                outlined></v-text-field>
+              <v-text-field label="Isr Timbrado" v-model="editedItem.isrTimbrado" dense required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Descarga(URL)" v-model="editedItem.urlDescarga" dense required
-                outlined></v-text-field>
+              <v-text-field label="Descarga(URL)" v-model="editedItem.urlDescarga" dense required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
               <v-text-field label="PDF" v-model="editedItem.pdf" dense required outlined></v-text-field>
@@ -50,8 +48,7 @@
           </div>
           <v-row>
             <v-col cols="12">
-              <v-textarea label="Observaciones" v-model="editedItem.observaciones" name="input-7-4"
-                outlined></v-textarea>
+              <v-textarea label="Observaciones" v-model="editedItem.observaciones" name="input-7-4" outlined></v-textarea>
             </v-col>
           </v-row>
         </v-form>
@@ -73,7 +70,12 @@ export default {
   components: {
     // Calendario,
   },
-  props:{ idTimbrado: "" },
+  props: {
+    idResultado: "",
+    timbradoProp: true,
+    resultadoProp: true,
+    idTimbrado: "",
+  },
   data: () => ({
     concepto: "",
     dialog: false,
@@ -103,7 +105,7 @@ export default {
     ],
   }),
   created() {
-    // this.getMapping();
+    this.getMapping();
   },
   computed: {
     computedDateFormatted() {
@@ -114,36 +116,50 @@ export default {
     },
   },
   methods: {
-    onlyNumber($event) {
-      let keyCode = $event.keyCode ? $event.keyCode : $event.which;
-      if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) {
-        // 46 is dot
-        $event.preventDefault();
+    getMapping() {
+      if (this.idResultado !== undefined) {
+        try {
+          axios.get("http://localhost:8082/Finalizado/" + this.idResultado).then((response) => {
+            this.editedItem.resultado = response.data.resultado;
+            this.editedItem.exito = response.data.exito;
+            this.editedItem.fallidos = response.data.fallidos;
+            this.editedItem.isrTimbrado = response.data.isrTimbrado;
+            this.editedItem.urlDescarga = response.data.urlDescarga;
+            this.editedItem.pdf = response.data.pdf;
+            this.editedItem.qr = response.data.qr;
+            this.editedItem.xml = response.data.xml;
+            this.dateFechaFin = response.data.fechaFinalizado;
+            this.editedItem.observaciones = response.data.observaciones;
+          })
+        } catch (error) {
+
+        }
       }
     },
-    formatDate(date) {
-      if (!date) return null;
-
-      const [year, month, day] = date.split("-");
-      return `${month}/${day}/${year}`;
-    },
-    parseDate(date) {
-      if (!date) return null;
-
-      const [month, day, year] = date.split("/");
-      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    },
-    showFecha() {
-      this.dateFechaPago = new Date(
-        Date.now() - new Date().getTimezoneOffset() * 60000
-      )
-        .toISOString()
-        .substr(0, 10);
-    },
     saveData: function () {
-      if (this.editedItem.resultado != null) {
+      if (this.timbradoProp) {
         axios
           .post("http://localhost:8082/Finalizado", {
+            resultado: this.editedItem.resultado,
+            exito: this.editedItem.exito,
+            fallidos: this.editedItem.fallidos,
+            isrTimbrado: this.editedItem.isrTimbrado,
+            urlDescarga: this.editedItem.urlDescarga,
+            pdf: this.editedItem.pdf,
+            qr: this.editedItem.qr,
+            xml: this.editedItem.xml,
+            fechaFinalizado: this.dateFechaFin,
+            observaciones: this.editedItem.observaciones,
+            timbradoEntity: { id: this.idTimbrado },
+            status: this.status,
+          })
+          .then(() => {
+            this.$emit("closeCompRes")
+          });
+      }
+      if(this.resultadoProp){
+        axios
+          .put("http://localhost:8082/Finalizado/" + this.idResultado, {
             resultado: this.editedItem.resultado,
             exito: this.editedItem.exito,
             fallidos: this.editedItem.fallidos,
@@ -168,6 +184,25 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
+    },
+    onlyNumber($event) {
+      let keyCode = $event.keyCode ? $event.keyCode : $event.which;
+      if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) {
+        // 46 is dot
+        $event.preventDefault();
+      }
+    },
+    formatDate(date) {
+      if (!date) return null;
+
+      const [year, month, day] = date.split("-");
+      return `${month}/${day}/${year}`;
+    },
+    parseDate(date) {
+      if (!date) return null;
+
+      const [month, day, year] = date.split("/");
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
     },
   },
 };
