@@ -1,20 +1,20 @@
 <template>
   <v-container class="container">
-    <v-data-table :headers="headers" :items="desserts" :expanded.sync="expanded" show-expand :search="search"
-      class="elevation-1">
+    <v-data-table :headers="headers" :items="desserts" :expanded.sync="expanded" show-expand class="elevation-1">
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title class="title">Capital Humano</v-toolbar-title>
           <v-divider class="mx-6" inset vertical></v-divider>
           <v-combobox v-model="showCalendar" label="Buscar Por Fecha" :items="itemsFechas" hide-details></v-combobox>
-          <v-menu v-if="showCalendar === 'Fecha Inicio a Fecha Fin'" v-model="menu1" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
-                  offset-y min-width="auto">
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-text-field v-model="search" label="Fecha De Pago" prepend-icon="mdi-calendar" readonly
-                      v-bind="attrs" v-on="on" hide-details></v-text-field>
-                  </template>
-                  <v-date-picker v-model="search" @input="menu1 = false" no-title scrollable></v-date-picker>
-                </v-menu>
+          <v-menu v-if="showCalendar === 'Fecha De Pago'" v-model="menu1" :close-on-content-click="false"
+            :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn @click="buscarFecha">Buscar</v-btn>
+              <v-text-field v-model="fechaBusqueda" label="Fecha De Pago" prepend-icon="mdi-calendar" v-bind="attrs"
+                v-on="on" hide-details></v-text-field>
+            </template>
+            <v-date-picker v-model="fechaBusqueda" @input="menu1 = false" no-title scrollable></v-date-picker>
+          </v-menu>
           <template>
             <v-dialog v-model="dialog" max-width="650px">
               <template v-slot:activator="{ on, attrs }">
@@ -152,6 +152,8 @@ export default {
     ItemsTimbrado,
   },
   data: () => ({
+    fechaBusqueda: "",
+    fechasRango: "",
     showCalendar: "",
     capitalH: "CapitalProp",
     dialog: false,
@@ -180,7 +182,8 @@ export default {
       (v) => !!v || "Name is required",
     ],
     itemsFechas: [
-      'Fecha Inicio a Fecha Fin',
+      'Fecha De Inicio',
+      'Fecha De Fin',
       'Fecha De Pago',
     ],
     idCapitalH: "",
@@ -189,6 +192,7 @@ export default {
     menu1: false,
     menu: false,
     dates: [],
+    datesRango: [],
     dateFechaPago: "",
     dateFechaCaptura: new Date(
       Date.now() - new Date().getTimezoneOffset() * 60000
@@ -229,6 +233,9 @@ export default {
     },
     dateRangeText() {
       return this.dates.join(" ~ ");
+    },
+    dateRangeFecha() {
+      return this.datesRango.join(" ~ ");
     },
     calculaPago: function () {
       if (
@@ -281,24 +288,7 @@ export default {
       this.desserts.length = "";
       axios.get("http://localhost:8082/CapitalHumano/dataCapital/true").then((response) => {
         this.result = response.data.data;
-        // console.log(response.data);
-        for (let i = 0; i < response.data.length; i++) {
-          this.desserts.push({
-            id: response.data[i].id,
-            concepto: response.data[i].concepto,
-            fondo: response.data[i].fondo,
-            numeroOficio: response.data[i].numeroOficio,
-            fechaInicio: response.data[i].fechaInicio,
-            fechaFin: response.data[i].fechaFin,
-            fechaPago: response.data[i].fechaPago,
-            retencionIsr: response.data[i].retencionIsr,
-            ajusteIsr: response.data[i].ajusteIsr,
-            subsidioAjuste: response.data[i].subsidioAjuste,
-            pagar: response.data[i].pagar,
-            fechaCaptura: response.data[i].fechaCaptura,
-            // status: response.data[i].status
-          });
-        }
+        this.desserts = response.data;
       });
     },
     saveData: function () {
@@ -342,6 +332,15 @@ export default {
             this.getMapping();
             this.close();
           });
+      }
+    },
+    buscarFecha() {
+      if (this.showCalendar === 'Fecha De Pago') {
+        this.desserts.length = "";
+        axios.get("http://localhost:8082/CapitalHumano/fechasCapital/" + this.fechaBusqueda).then((response) => {
+          console.log("Entro");
+          this.desserts = response.data;
+        })
       }
     },
     ocultarFila(id) {

@@ -207,21 +207,7 @@ export default {
       if (this.idTimbradoForm !== undefined) {
         try {
           axios.get("http://localhost:8082/Timbrado/" + this.idTimbradoForm).then((response) => {
-            this.editedItem.archivo = response.data.archivo;
-            this.editedItem.archivoTimbrar = response.data.archivoTimbrar;
-            this.editedItem.totalEmpleados = response.data.totalEmpleados;
-            this.dateFechaPago = response.data.fechaPago;
-            this.editedItem.descripcionSNFC = response.data.catalogoSNFCEntity.descripcion;
-            this.editedItem.descripcionStatus = response.data.catalogoStatusEntity.descripcion;
-            this.dateFechaSubida = response.data.fechaSubida;
-            this.editedItem.importeIsr = response.data.importeIsr;
-            this.editedItem.neto = response.data.neto;
-            this.editedItem.documentoContable = response.data.documentoContable;
-            this.editedItem.numero = response.data.numero;
-            this.editedItem.numEjecuciones = response.data.numEjecuciones;
-            this.editedItem.nomina = response.data.nomina;
-            this.editedItem.observaciones = response.data.observaciones;
-            // this.$emit("prueba");
+            this.editedItem = response.data;
           })
         } catch (error) {
           
