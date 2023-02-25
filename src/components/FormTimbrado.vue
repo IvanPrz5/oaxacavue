@@ -8,10 +8,11 @@
         <v-form ref="form" lazy-validation>
           <v-row class="form-calendar">
             <v-col cols="12" md="4">
-              <v-text-field label="Archivo" v-model="editedItem.archivo" required dense outlined></v-text-field>
+              <v-text-field :rules="txtRules" label="Archivo" v-model="editedItem.archivo" required dense
+                outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Archivo Timbrado" v-model="editedItem.archivoTimbrar" required dense
+              <v-text-field :rules="txtRules" label="Archivo Timbrado" v-model="editedItem.archivoTimbrar" required dense
                 outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
@@ -23,8 +24,8 @@
             <v-col>
               <v-menu :close-on-content-click="false" transition="scale-transition" offset-y min-width="auto">
                 <template v-slot:activator="{ on, attrs }">
-                  <v-text-field v-model="dateRangeText" label="Fecha De Inicio - Fecha Fin" prepend-icon="mdi-calendar"
-                    readonly v-bind="attrs" v-on="on"></v-text-field>
+                  <v-text-field :rules="txtRules" v-model="dateRangeText" label="Fecha De Inicio - Fecha Fin"
+                    prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
                 </template>
                 <v-date-picker v-model="dates" no-title range></v-date-picker>
               </v-menu>
@@ -33,8 +34,8 @@
               <v-menu v-model="menuFPago" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
                 offset-y min-width="auto">
                 <template v-slot:activator="{ on, attrs }">
-                  <v-text-field v-model="dateFechaPago" label="Fecha De Pago" prepend-icon="mdi-calendar" readonly
-                    required v-bind="attrs" v-on="on"></v-text-field>
+                  <v-text-field :rules="txtRules" v-model="dateFechaPago" label="Fecha De Pago"
+                    prepend-icon="mdi-calendar" readonly required v-bind="attrs" v-on="on"></v-text-field>
                 </template>
                 <v-date-picker v-model="dateFechaPago" @input="menuFPago = false" no-title scrollable></v-date-picker>
               </v-menu>
@@ -42,19 +43,20 @@
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-select label="SNFC" v-model="editedItem.descripcionSNFC" item-text="descripcion" item-value="id"
-                @change="getSNFC" :items="snfc" dense outlined></v-select>
+              <v-select :rules="txtRules" label="SNFC" v-model="editedItem.descripcionSNFC" item-text="descripcion"
+                item-value="id" @change="getSNFC" :items="snfc" dense outlined></v-select>
             </v-col>
             <v-col cols="12" md="4">
-              <v-select label="Estatus Timbrado" v-model="editedItem.descripcionStatus" item-text="descripcion"
-                item-value="id" @change="getStatus" :items="statusTable" dense outlined></v-select>
+              <v-select :rules="txtRules" label="Estatus Timbrado" v-model="editedItem.descripcionStatus"
+                item-text="descripcion" item-value="id" @change="getStatus" :items="statusTable" dense
+                outlined></v-select>
             </v-col>
             <v-col>
               <v-menu v-model="menuFSubida" :close-on-content-click="false" :nudge-right="40"
                 transition="scale-transition" offset-y min-width="auto">
                 <template v-slot:activator="{ on, attrs }">
-                  <v-text-field v-model="dateFechaSubida" label="Fecha De Subida" prepend-icon="mdi-calendar" readonly
-                    required v-bind="attrs" v-on="on"></v-text-field>
+                  <v-text-field :rules="txtRules" v-model="dateFechaSubida" label="Fecha De Subida"
+                    prepend-icon="mdi-calendar" readonly required v-bind="attrs" v-on="on"></v-text-field>
                 </template>
                 <v-date-picker v-model="dateFechaSubida" @input="menuFSubida = false" no-title scrollable></v-date-picker>
               </v-menu>
@@ -70,8 +72,8 @@
                 outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Documento Contable" v-model="editedItem.documentoContable" dense required
-                outlined></v-text-field>
+              <v-text-field :rules="txtRules" label="Documento Contable" v-model="editedItem.documentoContable" dense
+                required outlined></v-text-field>
             </v-col>
           </v-row>
           <v-row>
@@ -84,15 +86,18 @@
                 required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Nómina" v-model="editedItem.nomina" dense required outlined></v-text-field>
+              <v-text-field :rules="txtRules" label="Nómina" v-model="editedItem.nomina" dense required
+                outlined></v-text-field>
             </v-col>
             <v-col v-show="false" cols="12" md="4">
-              <v-text-field label="Id Capital" v-model="idCapitalH" dense required outlined></v-text-field>
+              <v-text-field :rules="txtRules" label="Id Capital" v-model="idCapitalH" dense required
+                outlined></v-text-field>
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="12">
-              <v-textarea label="Observaciones" v-model="editedItem.observaciones" name="input-7-4" outlined></v-textarea>
+              <v-textarea :rules="txtRules" label="Observaciones" v-model="editedItem.observaciones" name="input-7-4"
+                outlined></v-textarea>
             </v-col>
           </v-row>
         </v-form>
@@ -123,6 +128,9 @@ export default {
     timbradoItem: true,
   },
   data: () => ({
+    txtRules: [
+      (v) => !!v || "Este campo es requerido",
+    ],
     search: "",
     result: {},
     snfc: [],
@@ -159,11 +167,22 @@ export default {
     ],
   }),
   created() {
-    this.getMapping();
+    // this.getMapping();
     this.getSNFC();
     this.getStatus();
   },
   computed: {
+    getMapping() {
+      if (this.idTimbradoForm !== undefined) {
+        try {
+          axios.get("http://localhost:8082/Timbrado/" + this.idTimbradoForm).then((response) => {
+            this.editedItem = response.data;
+          })
+        } catch (error) {
+
+        }
+      }
+    },
     computedDateFormatted() {
       return this.formatDate(this.date);
     },
@@ -210,66 +229,71 @@ export default {
             this.editedItem = response.data;
           })
         } catch (error) {
-          
+
         }
       }
     },
     saveData() {
-      if(this.capitalH){
-        axios
-          .post("http://localhost:8082/Timbrado", {
-            archivo: this.editedItem.archivo,
-            archivoTimbrar: this.editedItem.archivoTimbrar,
-            totalEmpleados: this.editedItem.totalEmpleados,
-            fechaInicio: this.dates[0],
-            fechaFin: this.dates[1],
-            fechaPago: this.dateFechaPago,
-            catalogoSNFCEntity: { id: this.editedItem.descripcionSNFC },
-            catalogoStatusEntity: {
-              id: this.editedItem.descripcionStatus,
-            },
-            fechaSubida: this.dateFechaSubida,
-            importeIsr: this.editedItem.importeIsr,
-            neto: this.editedItem.neto,
-            documentoContable: this.editedItem.documentoContable,
-            numero: this.editedItem.numero,
-            numEjecuciones: this.editedItem.numEjecuciones,
-            nomina: this.editedItem.nomina,
-            capitalHEntity: { id: this.idCapitalH },
-            observaciones: this.editedItem.observaciones,
-            status: this.status,
-          })
-          .then(() => {
-            this.$emit("closeCompTim");
-          });
-      }else
-      if(this.timbradoItem){
-        axios
-          .put("http://localhost:8082/Timbrado/" + this.idTimbradoForm, {
-            archivo: this.editedItem.archivo,
-            archivoTimbrar: this.editedItem.archivoTimbrar,
-            totalEmpleados: this.editedItem.totalEmpleados,
-            fechaInicio: this.dates[0],
-            fechaFin: this.dates[1],
-            fechaPago: this.dateFechaPago,
-            catalogoSNFCEntity: { id: this.editedItem.descripcionSNFC },
-            catalogoStatusEntity: {
-              id: this.editedItem.descripcionStatus,
-            },
-            fechaSubida: this.dateFechaSubida,
-            importeIsr: this.editedItem.importeIsr,
-            neto: this.editedItem.neto,
-            documentoContable: this.editedItem.documentoContable,
-            numero: this.editedItem.numero,
-            numEjecuciones: this.editedItem.numEjecuciones,
-            nomina: this.editedItem.nomina,
-            capitalHEntity: { id: this.idCapitalH },
-            observaciones: this.editedItem.observaciones,
-            status: this.status,
-          })
-          .then(() => {
-            this.$emit("closeCompTim");
-          });
+      let validate = this.$refs.form.validate();
+      if (!validate) {
+      } else {
+        if (this.capitalH) {
+          axios
+            .post("http://localhost:8082/Timbrado", {
+              archivo: this.editedItem.archivo,
+              archivoTimbrar: this.editedItem.archivoTimbrar,
+              totalEmpleados: this.editedItem.totalEmpleados,
+              fechaInicio: this.dates[0],
+              fechaFin: this.dates[1],
+              fechaPago: this.dateFechaPago,
+              catalogoSNFCEntity: { id: this.editedItem.descripcionSNFC },
+              catalogoStatusEntity: {
+                id: this.editedItem.descripcionStatus,
+              },
+              fechaSubida: this.dateFechaSubida,
+              importeIsr: this.editedItem.importeIsr,
+              neto: this.editedItem.neto,
+              documentoContable: this.editedItem.documentoContable,
+              numero: this.editedItem.numero,
+              numEjecuciones: this.editedItem.numEjecuciones,
+              nomina: this.editedItem.nomina,
+              capitalHEntity: { id: this.idCapitalH },
+              observaciones: this.editedItem.observaciones,
+              status: this.status,
+            })
+            .then(() => {
+              this.$emit("closeCompTim");
+              this.editedItem = "";
+            });
+        } else
+          if (this.timbradoItem) {
+            axios
+              .put("http://localhost:8082/Timbrado/" + this.idTimbradoForm, {
+                archivo: this.editedItem.archivo,
+                archivoTimbrar: this.editedItem.archivoTimbrar,
+                totalEmpleados: this.editedItem.totalEmpleados,
+                fechaInicio: this.dates[0],
+                fechaFin: this.dates[1],
+                fechaPago: this.dateFechaPago,
+                catalogoSNFCEntity: { id: this.editedItem.descripcionSNFC },
+                catalogoStatusEntity: {
+                  id: this.editedItem.descripcionStatus,
+                },
+                fechaSubida: this.dateFechaSubida,
+                importeIsr: this.editedItem.importeIsr,
+                neto: this.editedItem.neto,
+                documentoContable: this.editedItem.documentoContable,
+                numero: this.editedItem.numero,
+                numEjecuciones: this.editedItem.numEjecuciones,
+                nomina: this.editedItem.nomina,
+                capitalHEntity: { id: this.idCapitalH },
+                observaciones: this.editedItem.observaciones,
+                status: this.status,
+              })
+              .then(() => {
+                this.$emit("closeCompTim");
+              });
+          }
       }
     },
     closeTimbrado() {

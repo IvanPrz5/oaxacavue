@@ -5,16 +5,54 @@
         <v-toolbar flat>
           <v-toolbar-title class="title">Capital Humano</v-toolbar-title>
           <v-divider class="mx-6" inset vertical></v-divider>
-          <v-combobox v-model="showCalendar" label="Buscar Por Fecha" :items="itemsFechas" hide-details></v-combobox>
-          <v-menu v-if="showCalendar === 'Fecha De Pago'" v-model="menu1" :close-on-content-click="false"
-            :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn @click="buscarFecha">Buscar</v-btn>
-              <v-text-field v-model="fechaBusqueda" label="Fecha De Pago" prepend-icon="mdi-calendar" v-bind="attrs"
-                v-on="on" hide-details></v-text-field>
-            </template>
-            <v-date-picker v-model="fechaBusqueda" @input="menu1 = false" no-title scrollable></v-date-picker>
-          </v-menu>
+          <v-spacer></v-spacer>
+          <v-form ref="form" lazy-validation class="div-filter">
+            <div v-show="showFilter">
+              <v-text-field :rules="nameRules" solo readonly v-model="dateRangeFecha"></v-text-field>
+            </div>
+            <div>
+              <v-btn v-show="showFilter" icon @click="getMapping">
+                <v-icon color="error"> mdi-filter-remove</v-icon>
+              </v-btn>
+            </div>
+          </v-form>
+          <div class="text-center">
+            <v-menu v-model="menuFechaBusqueda" :close-on-content-click="false" :nudge-width="400" offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn v-show="algo" icon v-bind="attrs" v-on="on">
+                  <v-icon> mdi-filter-plus </v-icon>
+                </v-btn>
+              </template>
+              <v-card>
+                <v-list>
+                  <v-list-item>
+                    <v-select v-model="showCalendar" label="Filtrar Por" :items="itemsFechas" hide-details></v-select>
+                  </v-list-item>
+                </v-list>
+                <v-divider></v-divider>
+                <v-list v-if="showCalendar.length > 0">
+                  <v-list-item>
+                    <v-menu :close-on-content-click="false" transition="scale-transition" offset-y min-width="auto">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-text-field :rules="nameRules" v-model="dateRangeFecha" label="Fecha De Inicio - Fecha Fin"
+                          prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" required></v-text-field>
+                      </template>
+                      <v-date-picker v-model="datesRango" no-title range></v-date-picker>
+                    </v-menu>
+                  </v-list-item>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="error" text @click="getMapping">
+                      Cancelar
+                    </v-btn>
+                    <v-btn color="primary" text @click="buscarFecha">
+                      Filtrar
+                    </v-btn>
+                  </v-card-actions>
+                </v-list>
+              </v-card>
+            </v-menu>
+          </div>
           <template>
             <v-dialog v-model="dialog" max-width="650px">
               <template v-slot:activator="{ on, attrs }">
@@ -32,15 +70,16 @@
                     <v-form ref="form" lazy-validation>
                       <v-row class="form-calendar">
                         <v-col cols="12" md="4">
-                          <v-text-field label="Concepto" v-model="editedItem.concepto" required dense
+                          <v-text-field :rules="nameRules" label="Concepto" v-model="editedItem.concepto" required dense
                             outlined></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field label="Fondo" v-model="editedItem.fondo" required dense outlined></v-text-field>
+                          <v-text-field :rules="nameRules" label="Fondo" v-model="editedItem.fondo" required dense
+                            outlined></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field label="Num. De Oficio" v-model="editedItem.numeroOficio" required dense
-                            outlined></v-text-field>
+                          <v-text-field :rules="nameRules" label="Num. De Oficio" v-model="editedItem.numeroOficio"
+                            required dense outlined></v-text-field>
                         </v-col>
                       </v-row>
                       <v-row class="calendar-div">
@@ -48,7 +87,8 @@
                           <v-menu :close-on-content-click="false" transition="scale-transition" offset-y min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
                               <v-text-field v-model="dateRangeText" label="Fecha De Inicio - Fecha Fin"
-                                prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
+                                prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" :rules="nameRules"
+                                required></v-text-field>
                             </template>
                             <v-date-picker v-model="dates" no-title range></v-date-picker>
                           </v-menu>
@@ -58,7 +98,8 @@
                             transition="scale-transition" offset-y min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
                               <v-text-field item-text="fechaPago" v-model="dateFechaPago" label="Fecha De Pago"
-                                prepend-icon="mdi-calendar" readonly required v-bind="attrs" v-on="on"></v-text-field>
+                                prepend-icon="mdi-calendar" readonly required v-bind="attrs" v-on="on"
+                                :rules="nameRules"></v-text-field>
                             </template>
                             <v-date-picker v-model="dateFechaPago" @input="menu = false" no-title
                               scrollable></v-date-picker>
@@ -67,31 +108,30 @@
                       </v-row>
                       <v-row>
                         <v-col cols="12" md="4">
-                          <v-text-field @keypress="onlyNumber" label="Retención Isr" v-model="editedItem.retencionIsr"
-                            dense required outlined></v-text-field>
+                          <v-text-field @keypress="onlyNumber" :rules="numberRules" label="Retención Isr"
+                            v-model="editedItem.retencionIsr" dense required outlined></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field @keypress="onlyNumber" label="Ajuste Isr" v-model="editedItem.ajusteIsr" dense
-                            required outlined></v-text-field>
+                          <v-text-field @keypress="onlyNumber" :rules="numberRules" label="Ajuste Isr"
+                            v-model="editedItem.ajusteIsr" dense required outlined></v-text-field>
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field @keypress="onlyNumber" label="Subsidio" v-model="editedItem.subsidioAjuste" dense
-                            required outlined></v-text-field>
+                          <v-text-field @keypress="onlyNumber" :rules="numberRules" label="Subsidio"
+                            v-model="editedItem.subsidioAjuste" dense required outlined></v-text-field>
                         </v-col>
                       </v-row>
                       <div>
-                        <v-text-field @keypress="onlyNumber" label="A Pagar" v-model="editedItem.pagar" readonly
-                          required>{{ calculaPago }}</v-text-field>
-                        <!-- <v-switch v-model="status" label="Status"></v-switch> -->
+                        <v-text-field :rules="numberRules" label="A Pagar" v-model="editedItem.pagar" readonly required>
+                          {{ calculaPago }}</v-text-field>
                       </div>
                       <v-row v-show="false" class="main-div">
                         <v-col cols="12" md="4">
                           <v-menu :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y
                             min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
-                              <v-text-field v-model="dateFechaCaptura" label="Fecha De Captura"
-                                prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"
-                                v-show="false"></v-text-field>
+                              <v-text-field :rules="nameRules" v-model="dateFechaCaptura" label="Fecha De Captura"
+                                prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" v-show="false"
+                                required></v-text-field>
                             </template>
                           </v-menu>
                         </v-col>
@@ -136,12 +176,15 @@
     <v-dialog v-model="dialogTimbrado" max-width="700px">
       <FormTimbrado :capitalH="capitalH" :idCapitalH="idCapitalH" @closeCompTim="close" />
     </v-dialog>
+    <v-dialog v-model="dialogError" max-width="300px">
+      <ErrorComponent @closeErrorComp="closeErrorComp" />
+    </v-dialog>
   </v-container>
 </template>
-<!-- :idCapitalH="item.id" -->
 
 <script>
 import axios from "axios";
+import ErrorComponent from "./ErrorComponent.vue";
 import FormTimbrado from "./FormTimbrado.vue";
 import ItemsTimbrado from "./ItemsTimbrado.vue";
 
@@ -150,8 +193,20 @@ export default {
   components: {
     FormTimbrado,
     ItemsTimbrado,
+    ErrorComponent,
   },
   data: () => ({
+    nameRules: [
+      (v) => !!v || "Este campo es requerido",
+    ],
+    numberRules: [
+      (v) => !!v || "Este campo es requerido",
+      v => /^[0-9]+([.][0-9]+)?$/.test(v) || 'Valores entre 0-9',
+    ],
+    dialogError: false,
+    showTxt: false,
+    algo: true,
+    showFilter: false,
     fechaBusqueda: "",
     fechasRango: "",
     showCalendar: "",
@@ -172,25 +227,17 @@ export default {
       { text: "Ajuste Isr", value: "ajusteIsr" },
       { text: "Subsidio", value: "subsidioAjuste" },
       { text: "A Pagar", value: "pagar" },
-      // { text: "Status", value:"status" },      
+      // { text: "Status", value:"status" },
       { text: "", value: "data-table-expand" },
       { text: "Opciones", value: "actions" },
     ],
-    numberRules: [
-      (value) => value > 0 || "campo requerido",
-      (value) => value > 0 || "El valor debe ser mayor a cero",
-      (v) => !!v || "Name is required",
-    ],
-    itemsFechas: [
-      'Fecha De Inicio',
-      'Fecha De Fin',
-      'Fecha De Pago',
-    ],
+    itemsFechas: ["Fecha De Inicio", "Fecha De Fin", "Fecha De Pago"],
     idCapitalH: "",
     status: true,
     result: [],
     menu1: false,
     menu: false,
+    menuFechaBusqueda: false,
     dates: [],
     datesRango: [],
     dateFechaPago: "",
@@ -203,11 +250,8 @@ export default {
     editedIndex: -1,
     editedItem: [
       {
-        id: "",
         concepto: "",
         fondo: "",
-        date0: "",
-        date1: "",
         numeroOficio: "",
         retencionIsr: "",
         ajusteIsr: "",
@@ -259,6 +303,153 @@ export default {
       this.idCapitalHa = id;
       // console.log(this.idCapitalHa)
     },
+    getMapping() {
+      this.desserts.length = "";
+      axios
+        .get("http://localhost:8082/CapitalHumano/dataCapital/true")
+        .then((response) => {
+          this.result = response.data.data;
+          this.desserts = response.data;
+          this.menuFechaBusqueda = false;
+          this.algo = true;
+          this.showFilter = false;
+          this.showTxt = false;
+        });
+    },
+    saveData: function () {
+      let validate = this.$refs.form.validate();
+      if (!validate) {
+      } else {
+        if (this.editedIndex > -1) {
+          axios
+            .put("http://localhost:8082/CapitalHumano/" + this.editedItem.id, {
+              concepto: this.editedItem.concepto,
+              fondo: this.editedItem.fondo,
+              numeroOficio: this.editedItem.numeroOficio,
+              fechaInicio: this.dates[0],
+              fechaFin: this.dates[1],
+              fechaPago: this.dateFechaPago,
+              retencionIsr: this.editedItem.retencionIsr,
+              ajusteIsr: this.editedItem.ajusteIsr,
+              subsidioAjuste: this.editedItem.subsidioAjuste,
+              pagar: this.editedItem.pagar,
+              fechaCaptura: this.dateFechaCaptura,
+              status: this.status,
+            })
+            .then(() => {
+              this.getMapping();
+              this.close();
+            });
+        } else {
+          axios
+            .post("http://localhost:8082/CapitalHumano", {
+              concepto: this.editedItem.concepto,
+              fondo: this.editedItem.fondo,
+              numeroOficio: this.editedItem.numeroOficio,
+              fechaInicio: this.dates[0],
+              fechaFin: this.dates[1],
+              fechaPago: this.dateFechaPago,
+              retencionIsr: this.editedItem.retencionIsr,
+              ajusteIsr: this.editedItem.ajusteIsr,
+              subsidioAjuste: this.editedItem.subsidioAjuste,
+              pagar: this.editedItem.pagar,
+              fechaCaptura: this.dateFechaCaptura,
+              status: this.status,
+            })
+            .then(() => {
+              this.getMapping();
+              this.close();
+            });
+        }
+      }
+    },
+    buscarFecha() {
+      let validate = this.$refs.form.validate();
+      if (!validate) {
+        console.log("Hola");
+      } else {
+        if (this.showCalendar === "Fecha De Pago") {
+          this.desserts.length = "";
+          axios
+            .get(
+              "http://localhost:8082/CapitalHumano/fechasPago/" +
+              this.datesRango[0] +
+              "/" +
+              this.datesRango[1]
+            )
+            .then((response) => {
+              console.log("Entro");
+              this.desserts = response.data;
+              this.menuFechaBusqueda = false;
+              this.algo = false;
+              this.showFilter = true;
+              this.showTxt = true;
+            });
+        }
+        if (this.showCalendar === "Fecha De Inicio") {
+          this.desserts.length = "";
+          axios
+            .get(
+              "http://localhost:8082/CapitalHumano/fechasInicio/" +
+              this.datesRango[0] +
+              "/" +
+              this.datesRango[1]
+            )
+            .then((response) => {
+              console.log("Entro");
+              this.desserts = response.data;
+              this.menuFechaBusqueda = false;
+              this.algo = false;
+              this.showFilter = true;
+              this.showTxt = true;
+            });
+        }
+        if (this.showCalendar === "Fecha De Fin") {
+          this.desserts.length = "";
+          axios
+            .get(
+              "http://localhost:8082/CapitalHumano/fechasFin/" +
+              this.datesRango[0] +
+              "/" +
+              this.datesRango[1]
+            )
+            .then((response) => {
+              this.desserts = response.data;
+              this.menuFechaBusqueda = false;
+              this.algo = false;
+              this.showFilter = true;
+              this.showTxt = true;
+            });
+        }
+      }
+    },
+    ocultarFila(id) {
+      let statusFalse = false;
+      axios
+        .put("http://localhost:8082/CapitalHumano/statusCapital/" + id, {
+          status: statusFalse,
+        })
+        .then(() => {
+          this.getMapping();
+        });
+    },
+    editItem(item) {
+      this.editedIndex = this.desserts.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+    closeErrorComp() {
+      this.dialogError = false;
+    },
+    close() {
+      this.dialog = false;
+      this.dialogTimbrado = false;
+      this.$nextTick(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.dateFechaPago = "";
+        this.editedIndex = -1;
+      });
+    },
     onlyNumber($event) {
       let keyCode = $event.keyCode ? $event.keyCode : $event.which;
       if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) {
@@ -284,89 +475,6 @@ export default {
         .toISOString()
         .substr(0, 10);
     },
-    getMapping() {
-      this.desserts.length = "";
-      axios.get("http://localhost:8082/CapitalHumano/dataCapital/true").then((response) => {
-        this.result = response.data.data;
-        this.desserts = response.data;
-      });
-    },
-    saveData: function () {
-      if (this.editedIndex > -1) {
-        axios
-          .put("http://localhost:8082/CapitalHumano/" + this.editedItem.id, {
-            concepto: this.editedItem.concepto,
-            fondo: this.editedItem.fondo,
-            numeroOficio: this.editedItem.numeroOficio,
-            fechaInicio: this.dates[0],
-            fechaFin: this.dates[1],
-            fechaPago: this.dateFechaPago,
-            retencionIsr: this.editedItem.retencionIsr,
-            ajusteIsr: this.editedItem.ajusteIsr,
-            subsidioAjuste: this.editedItem.subsidioAjuste,
-            pagar: this.editedItem.pagar,
-            fechaCaptura: this.dateFechaCaptura,
-            status: this.status,
-          })
-          .then(() => {
-            this.getMapping();
-            this.close();
-          });
-      } else {
-        axios
-          .post("http://localhost:8082/CapitalHumano", {
-            concepto: this.editedItem.concepto,
-            fondo: this.editedItem.fondo,
-            numeroOficio: this.editedItem.numeroOficio,
-            fechaInicio: this.dates[0],
-            fechaFin: this.dates[1],
-            fechaPago: this.dateFechaPago,
-            retencionIsr: this.editedItem.retencionIsr,
-            ajusteIsr: this.editedItem.ajusteIsr,
-            subsidioAjuste: this.editedItem.subsidioAjuste,
-            pagar: this.editedItem.pagar,
-            fechaCaptura: this.dateFechaCaptura,
-            status: this.status,
-          })
-          .then(() => {
-            this.getMapping();
-            this.close();
-          });
-      }
-    },
-    buscarFecha() {
-      if (this.showCalendar === 'Fecha De Pago') {
-        this.desserts.length = "";
-        axios.get("http://localhost:8082/CapitalHumano/fechasCapital/" + this.fechaBusqueda).then((response) => {
-          console.log("Entro");
-          this.desserts = response.data;
-        })
-      }
-    },
-    ocultarFila(id) {
-      let statusFalse = false;
-      axios
-        .put("http://localhost:8082/CapitalHumano/statusCapital/" + id, {
-          status: statusFalse,
-        })
-        .then(() => {
-          this.getMapping();
-        });
-    },
-    editItem(item) {
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-    close() {
-      this.dialog = false;
-      this.dialogTimbrado = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.dateFechaPago = "";
-        this.editedIndex = -1;
-      });
-    },
   },
 };
 </script>
@@ -375,5 +483,10 @@ export default {
 /* @import "../style/CapitalH.css"; */
 .btn-control {
   display: flex;
+}
+
+.div-filter {
+  display: flex;
+  margin-top: 30px;
 }
 </style>

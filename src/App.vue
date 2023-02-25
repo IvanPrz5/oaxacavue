@@ -8,11 +8,12 @@
 
 <script>
 import CapitalH from "./components/CapitalH.vue";
+
 export default {
   name: "App",
   components: {
     CapitalH,
-  },
+},
   data: () => ({
     //
   }),
