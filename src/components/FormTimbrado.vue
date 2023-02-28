@@ -16,15 +16,15 @@
                 outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field @keypress="onlyNumber" label="Total de Empleados" v-model="editedItem.totalEmpleados" required
-                dense outlined></v-text-field>
+              <v-text-field :rules="numberRules" @keypress="onlyNumber" label="Total de Empleados"
+                v-model="editedItem.totalEmpleados" required dense outlined></v-text-field>
             </v-col>
           </v-row>
           <v-row class="calendar-div">
             <v-col>
               <v-menu :close-on-content-click="false" transition="scale-transition" offset-y min-width="auto">
                 <template v-slot:activator="{ on, attrs }">
-                  <v-text-field :rules="txtRules" v-model="dateRangeText" label="Fecha De Inicio - Fecha Fin"
+                  <v-text-field :rules="txtRules" v-model="dates" label="Fecha De Inicio - Fecha Fin"
                     prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
                 </template>
                 <v-date-picker v-model="dates" no-title range></v-date-picker>
@@ -43,13 +43,12 @@
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-select :rules="txtRules" label="SNFC" v-model="editedItem.descripcionSNFC" item-text="descripcion"
-                item-value="id" @change="getSNFC" :items="snfc" dense outlined></v-select>
+              <v-select :rules="txtRules" label="SNFC" v-model="descripcionSNFC" item-text="descripcion" item-value="id"
+                @change="getSNFC" :items="snfc" dense outlined></v-select>
             </v-col>
             <v-col cols="12" md="4">
-              <v-select :rules="txtRules" label="Estatus Timbrado" v-model="editedItem.descripcionStatus"
-                item-text="descripcion" item-value="id" @change="getStatus" :items="statusTable" dense
-                outlined></v-select>
+              <v-select :rules="txtRules" label="Estatus Timbrado" v-model="descripcionStatus" item-text="descripcion"
+                item-value="id" @change="getStatus" :items="statusTable" dense outlined></v-select>
             </v-col>
             <v-col>
               <v-menu v-model="menuFSubida" :close-on-content-click="false" :nudge-right="40"
@@ -64,12 +63,12 @@
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-text-field @keypress="onlyNumber" label="Importe Isr" v-model="editedItem.importeIsr" dense required
-                outlined></v-text-field>
+              <v-text-field :rules="numberFloatRules" @keypress="onlyNumber" label="Importe Isr"
+                v-model="editedItem.importeIsr" dense required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field @keypress="onlyNumber" label="Neto" v-model="editedItem.neto" dense required
-                outlined></v-text-field>
+              <v-text-field :rules="numberFloatRules" @keypress="onlyNumber" label="Neto" v-model="editedItem.neto" dense
+                required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
               <v-text-field :rules="txtRules" label="Documento Contable" v-model="editedItem.documentoContable" dense
@@ -78,12 +77,12 @@
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-text-field @keypress="onlyNumber" label="Número" v-model="editedItem.numero" dense required
-                outlined></v-text-field>
+              <v-text-field :rules="numberRules" @keypress="onlyNumber" label="Número" v-model="editedItem.numero" dense
+                required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field @keypress="onlyNumber" label="Número de Ejecuciones" v-model="editedItem.numEjecuciones" dense
-                required outlined></v-text-field>
+              <v-text-field :rules="numberRules" @keypress="onlyNumber" label="Número de Ejecuciones"
+                v-model="editedItem.numEjecuciones" dense required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
               <v-text-field :rules="txtRules" label="Nómina" v-model="editedItem.nomina" dense required
@@ -115,11 +114,9 @@
 
 <script>
 import axios from "axios";
-
 export default {
   name: "FormTimbrado",
-  components: {
-  },
+  components: {},
   props: {
     idCapitalH: "",
     idTimbradoForm: "",
@@ -128,8 +125,14 @@ export default {
     timbradoItem: true,
   },
   data: () => ({
-    txtRules: [
+    txtRules: [(v) => !!v || "Este campo es requerido"],
+    numberFloatRules: [
       (v) => !!v || "Este campo es requerido",
+      (v) => /^[0-9]+([.][0-9]+)?$/.test(v) || "Valores entre 0-9",
+    ],
+    numberRules: [
+      (v) => !!v || "Este campo es requerido",
+      (v) => /^[0-9]+$/.test(v) || "Solo números enteros",
     ],
     search: "",
     result: {},
@@ -143,13 +146,13 @@ export default {
     dateFechaSubida: "",
     desserts: [],
     editedIndex: -1,
+    descripcionSNFC: "",
+    descripcionStatus: "",
     editedItem: [
       {
         archivo: "",
         archivoTimbrar: "",
         totalEmpleados: "",
-        descripcionSNFC: "",
-        descripcionStatus: "",
         importeIsr: "",
         neto: "",
         documentoContable: "",
@@ -160,29 +163,13 @@ export default {
         observaciones: "",
       },
     ],
-    numberRules: [
-      (value) => value > 0 || "campo requerido",
-      (value) => value > 0 || "El valor debe ser mayor a cero",
-      (v) => !!v || "Name is required",
-    ],
   }),
   created() {
-    // this.getMapping();
+    this.getMapping();
     this.getSNFC();
     this.getStatus();
   },
   computed: {
-    getMapping() {
-      if (this.idTimbradoForm !== undefined) {
-        try {
-          axios.get("http://localhost:8082/Timbrado/" + this.idTimbradoForm).then((response) => {
-            this.editedItem = response.data;
-          })
-        } catch (error) {
-
-        }
-      }
-    },
     computedDateFormatted() {
       return this.formatDate(this.date);
     },
@@ -212,31 +199,40 @@ export default {
     getSNFC() {
       // console.log(this.idCapitalH);
       axios.get("http://localhost:8082/SNFC").then((response) => {
-        this.result = response.data
+        this.result = response.data;
         this.snfc = this.result;
       });
     },
     getStatus() {
       axios.get("http://localhost:8082/Status").then((response) => {
-        this.result = response.data
+        this.result = response.data;
         this.statusTable = this.result;
       });
     },
     getMapping() {
       if (this.idTimbradoForm !== undefined) {
         try {
-          axios.get("http://localhost:8082/Timbrado/" + this.idTimbradoForm).then((response) => {
-            this.editedItem = response.data;
-          })
-        } catch (error) {
-
-        }
+          axios
+            .get("http://localhost:8082/Timbrado/" + this.idTimbradoForm)
+            .then((response) => {
+              console.log(response.data);
+              this.editedItem = response.data;
+              this.descripcionSNFC = { id: response.data.catalogoSNFCEntity.id }
+              // catalogoSNFCEntity = { id: this.descripcionSNFC};
+              this.descripcionStatus = response.data.catalogoStatusEntity;
+              this.dates = [response.data.fechaInicio, response.data.fechaFin];
+              this.dateFechaPago = response.data.fechaPago;
+              this.dateFechaSubida = response.data.fechaSubida;
+            });
+        } catch (error) { }
       }
     },
     saveData() {
-      let validate = this.$refs.form.validate();
+      /* let validate = this.$refs.form.validate();
       if (!validate) {
-      } else {
+        console.log(validate)
+        console.log("Eroor")
+      } else { */
         if (this.capitalH) {
           axios
             .post("http://localhost:8082/Timbrado", {
@@ -263,9 +259,8 @@ export default {
             })
             .then(() => {
               this.$emit("closeCompTim");
-              this.editedItem = "";
             });
-        } else
+        } else {
           if (this.timbradoItem) {
             axios
               .put("http://localhost:8082/Timbrado/" + this.idTimbradoForm, {
@@ -275,9 +270,9 @@ export default {
                 fechaInicio: this.dates[0],
                 fechaFin: this.dates[1],
                 fechaPago: this.dateFechaPago,
-                catalogoSNFCEntity: { id: this.editedItem.descripcionSNFC },
+                catalogoSNFCEntity: { id: this.descripcionSNFC },
                 catalogoStatusEntity: {
-                  id: this.editedItem.descripcionStatus,
+                  id: this.descripcionStatus,
                 },
                 fechaSubida: this.dateFechaSubida,
                 importeIsr: this.editedItem.importeIsr,
@@ -292,8 +287,10 @@ export default {
               })
               .then(() => {
                 this.$emit("closeCompTim");
+                // this.editedItem = "";
               });
-          }
+          // }
+        }
       }
     },
     closeTimbrado() {

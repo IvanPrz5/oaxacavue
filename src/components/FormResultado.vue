@@ -8,39 +8,39 @@
         <v-form ref="form" lazy-validation>
           <v-row class="form-calendar">
             <v-col cols="12" md="4">
-              <v-text-field label="Resultado" v-model="editedItem.resultado" required dense outlined></v-text-field>
+              <v-text-field :rules="txtRules" label="Resultado" v-model="editedItem.resultado" required dense outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Exitosos" v-model="editedItem.exito" required dense outlined></v-text-field>
+              <v-text-field :rules="numberRules" label="Exitosos" v-model="editedItem.exito" required dense outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="Fallidos" v-model="editedItem.fallidos" required dense outlined></v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12" md="4">
-              <v-text-field label="Isr Timbrado" v-model="editedItem.isrTimbrado" dense required outlined></v-text-field>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field label="Descarga(URL)" v-model="editedItem.urlDescarga" dense required outlined></v-text-field>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field label="PDF" v-model="editedItem.pdf" dense required outlined></v-text-field>
+              <v-text-field :rules="numberRules" label="Fallidos" v-model="editedItem.fallidos" required dense outlined></v-text-field>
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-text-field label="QR" v-model="editedItem.qr" dense required outlined></v-text-field>
+              <v-text-field :rules="numberFloatRules" label="Isr Timbrado" v-model="editedItem.isrTimbrado" dense required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field label="XML" v-model="editedItem.xml" dense required outlined></v-text-field>
+              <v-text-field :rules="txtRules" label="Descarga(URL)" v-model="editedItem.urlDescarga" dense required outlined></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field :rules="txtRules" label="PDF" v-model="editedItem.pdf" dense required outlined></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" md="4">
+              <v-text-field :rules="txtRules" label="QR" v-model="editedItem.qr" dense required outlined></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field :rules="txtRules" label="XML" v-model="editedItem.xml" dense required outlined></v-text-field>
             </v-col>
           </v-row>
           <div>
             <v-menu v-model="menu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
               offset-y min-width="auto">
               <template v-slot:activator="{ on, attrs }">
-                <v-text-field v-model="dateFechaFin" label="Fecha Fin" prepend-icon="mdi-calendar" readonly required
+                <v-text-field :rules="txtRules" v-model="dateFechaFin" label="Fecha Fin" prepend-icon="mdi-calendar" readonly required
                   v-bind="attrs" v-on="on"></v-text-field>
               </template>
               <v-date-picker v-model="dateFechaFin" @input="menu = false" no-title scrollable></v-date-picker>
@@ -48,7 +48,7 @@
           </div>
           <v-row>
             <v-col cols="12">
-              <v-textarea label="Observaciones" v-model="editedItem.observaciones" name="input-7-4" outlined></v-textarea>
+              <v-textarea :rules="txtRules" label="Observaciones" v-model="editedItem.observaciones" name="input-7-4" outlined></v-textarea>
             </v-col>
           </v-row>
         </v-form>
@@ -77,6 +77,17 @@ export default {
     idTimbrado: "",
   },
   data: () => ({
+    txtRules: [
+      (v) => !!v || "Este campo es requerido",
+    ],
+    numberFloatRules: [
+      (v) => !!v || "Este campo es requerido",
+      v => /^[0-9]+([.][0-9]+)?$/.test(v) || 'Valores entre 0-9',
+    ],
+    numberRules: [
+      (v) => !!v || "Este campo es requerido",
+      v => /^[0-9]+$/.test(v) || 'Solo números enteros',
+    ],
     concepto: "",
     dialog: false,
     search: "",
@@ -97,11 +108,6 @@ export default {
         xml: "",
         observaciones: "",
       },
-    ],
-    numberRules: [
-      (value) => value > 0 || "campo requerido",
-      (value) => value > 0 || "El valor debe ser mayor a cero",
-      (v) => !!v || "Name is required",
     ],
   }),
   created() {
@@ -137,7 +143,10 @@ export default {
       }
     },
     saveData: function () {
-      if (this.timbradoProp) {
+      let validate = this.$refs.form.validate();
+      if(!validate){
+      }else{
+        if (this.timbradoProp) {
         axios
           .post("http://localhost:8082/Finalizado", {
             resultado: this.editedItem.resultado,
@@ -176,6 +185,7 @@ export default {
           .then(() => {
             this.$emit("closeCompRes")
           });
+      }
       }
     },
     closeResultado() {

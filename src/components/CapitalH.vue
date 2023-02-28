@@ -86,7 +86,7 @@
                         <v-col>
                           <v-menu :close-on-content-click="false" transition="scale-transition" offset-y min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
-                              <v-text-field v-model="dateRangeText" label="Fecha De Inicio - Fecha Fin"
+                              <v-text-field v-model="dates" label="Fecha De Inicio - Fecha Fin"
                                 prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" :rules="nameRules"
                                 required></v-text-field>
                             </template>
@@ -187,7 +187,6 @@ import axios from "axios";
 import ErrorComponent from "./ErrorComponent.vue";
 import FormTimbrado from "./FormTimbrado.vue";
 import ItemsTimbrado from "./ItemsTimbrado.vue";
-
 export default {
   name: "CapitalH",
   components: {
@@ -255,6 +254,7 @@ export default {
         numeroOficio: "",
         retencionIsr: "",
         ajusteIsr: "",
+        dates:"",
         subsidio: "",
         pagar: "",
       },
@@ -359,6 +359,7 @@ export default {
             .then(() => {
               this.getMapping();
               this.close();
+              this.$refs.form.reset();
             });
         }
       }
@@ -435,13 +436,22 @@ export default {
     },
     editItem(item) {
       this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
+      axios
+        .get(
+          "http://localhost:8082/CapitalHumano/" + item.id)
+        .then((response) => {
+          this.dialog = true;
+          this.editedItem = response.data;
+          this.dateFechaPago = response.data.fechaPago;
+          this.dates = [response.data.fechaInicio, response.data.fechaFin];
+        });
+      // this.dialog = true;
     },
     closeErrorComp() {
       this.dialogError = false;
     },
-    close() {
+    close() {  
+      this.$refs.form.reset();
       this.dialog = false;
       this.dialogTimbrado = false;
       this.$nextTick(() => {
@@ -464,7 +474,6 @@ export default {
     },
     parseDate(date) {
       if (!date) return null;
-
       const [month, day, year] = date.split("/");
       return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
     },
@@ -484,7 +493,6 @@ export default {
 .btn-control {
   display: flex;
 }
-
 .div-filter {
   display: flex;
   margin-top: 30px;
