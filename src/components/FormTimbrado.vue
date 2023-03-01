@@ -44,7 +44,7 @@
           <v-row>
             <v-col cols="12" md="4">
               <v-select :rules="txtRules" label="SNFC" v-model="descripcionSNFC" item-text="descripcion" item-value="id"
-                @change="getSNFC" :items="snfc" dense outlined></v-select>
+                :items="snfc" dense outlined></v-select>
             </v-col>
             <v-col cols="12" md="4">
               <v-select :rules="txtRules" label="Estatus Timbrado" v-model="descripcionStatus" item-text="descripcion"
@@ -88,6 +88,9 @@
               <v-text-field :rules="txtRules" label="Nómina" v-model="editedItem.nomina" dense required
                 outlined></v-text-field>
             </v-col>
+            {{ idTimbradoForm }}
+            {{ editedItem.idCapitalHumano }}
+            {{ editedItem }}
             <v-col v-show="false" cols="12" md="4">
               <v-text-field :rules="txtRules" label="Id Capital" v-model="idCapitalH" dense required
                 outlined></v-text-field>
@@ -159,7 +162,7 @@ export default {
         numero: "",
         numEjecuciones: "",
         nomina: "",
-        idCapitalH: "",
+        idCapitalHumano: "",
         observaciones: "",
       },
     ],
@@ -197,7 +200,6 @@ export default {
         .substr(0, 10);
     },
     getSNFC() {
-      // console.log(this.idCapitalH);
       axios.get("http://localhost:8082/SNFC").then((response) => {
         this.result = response.data;
         this.snfc = this.result;
@@ -209,31 +211,40 @@ export default {
         this.statusTable = this.result;
       });
     },
-    getMapping() {
+    getMapping(numero) {
+      console.log("Getmapp con parame");
       if (this.idTimbradoForm !== undefined) {
+        console.log("Antes      " + this.editedItem.importeIsr);
+        if(numero === undefined){
+          numero = this.idTimbradoForm;
+        }
         try {
           axios
-            .get("http://localhost:8082/Timbrado/" + this.idTimbradoForm)
+            .get("http://localhost:8082/Timbrado/" + numero)
             .then((response) => {
               console.log(response.data);
               this.editedItem = response.data;
-              this.descripcionSNFC = { id: response.data.catalogoSNFCEntity.id }
-              // catalogoSNFCEntity = { id: this.descripcionSNFC};
+              this.editedItem.idCapitalHumano = response.data.capitalHEntity.id;
+              this.descripcionSNFC = response.data.catalogoSNFCEntity;
               this.descripcionStatus = response.data.catalogoStatusEntity;
               this.dates = [response.data.fechaInicio, response.data.fechaFin];
               this.dateFechaPago = response.data.fechaPago;
               this.dateFechaSubida = response.data.fechaSubida;
+              console.log("Despues      " + this.editedItem.importeIsr);
             });
         } catch (error) { }
       }
     },
     saveData() {
-      /* let validate = this.$refs.form.validate();
-      if (!validate) {
-        console.log(validate)
-        console.log("Eroor")
-      } else { */
+      let validate = this.$refs.form.validate();
+      if (validate) {
+        console.log("Si")
         if (this.capitalH) {
+          console.log("Guardo")
+        } else if (this.timbradoItem) {
+          console.log("acatuaizo")
+        }
+        /* if (this.capitalH) {
           axios
             .post("http://localhost:8082/Timbrado", {
               archivo: this.editedItem.archivo,
@@ -242,10 +253,8 @@ export default {
               fechaInicio: this.dates[0],
               fechaFin: this.dates[1],
               fechaPago: this.dateFechaPago,
-              catalogoSNFCEntity: { id: this.editedItem.descripcionSNFC },
-              catalogoStatusEntity: {
-                id: this.editedItem.descripcionStatus,
-              },
+              catalogoSNFCEntity: { id: this.descripcionSNFC },
+              catalogoStatusEntity: { id: this.descripcionStatus },
               fechaSubida: this.dateFechaSubida,
               importeIsr: this.editedItem.importeIsr,
               neto: this.editedItem.neto,
@@ -258,39 +267,40 @@ export default {
               status: this.status,
             })
             .then(() => {
-              this.$emit("closeCompTim");
+              // this.$emit("closeCompTim");
             });
-        } else {
-          if (this.timbradoItem) {
-            axios
-              .put("http://localhost:8082/Timbrado/" + this.idTimbradoForm, {
-                archivo: this.editedItem.archivo,
-                archivoTimbrar: this.editedItem.archivoTimbrar,
-                totalEmpleados: this.editedItem.totalEmpleados,
-                fechaInicio: this.dates[0],
-                fechaFin: this.dates[1],
-                fechaPago: this.dateFechaPago,
-                catalogoSNFCEntity: { id: this.descripcionSNFC },
-                catalogoStatusEntity: {
-                  id: this.descripcionStatus,
-                },
-                fechaSubida: this.dateFechaSubida,
-                importeIsr: this.editedItem.importeIsr,
-                neto: this.editedItem.neto,
-                documentoContable: this.editedItem.documentoContable,
-                numero: this.editedItem.numero,
-                numEjecuciones: this.editedItem.numEjecuciones,
-                nomina: this.editedItem.nomina,
-                capitalHEntity: { id: this.idCapitalH },
-                observaciones: this.editedItem.observaciones,
-                status: this.status,
-              })
-              .then(() => {
-                this.$emit("closeCompTim");
-                // this.editedItem = "";
-              });
-          // }
         }
+        if (this.timbradoItem) {
+          axios
+            .put("http://localhost:8082/Timbrado/" + this.idTimbradoForm, {
+              archivo: this.editedItem.archivo,
+              archivoTimbrar: this.editedItem.archivoTimbrar,
+              totalEmpleados: this.editedItem.totalEmpleados,
+              fechaInicio: this.dates[0],
+              fechaFin: this.dates[1],
+              fechaPago: this.dateFechaPago,
+              catalogoSNFCEntity: { id: this.descripcionSNFC },
+              catalogoStatusEntity: { id: this.descripcionStatus },
+              fechaSubida: this.dateFechaSubida,
+              importeIsr: this.editedItem.importeIsr,
+              neto: this.editedItem.neto,
+              documentoContable: this.editedItem.documentoContable,
+              numero: this.editedItem.numero,
+              numEjecuciones: this.editedItem.numEjecuciones,
+              nomina: this.editedItem.nomina,
+              capitalHEntity: { id: this.idCapitalH },
+              observaciones: this.editedItem.observaciones,
+              status: this.status,
+            })
+            .then(() => {
+              // this.$emit("closeCompTim");
+            })
+            .catch(() => {
+              // this.$emit("closeCompTim");
+            });
+        } */
+      } else {
+        console.log("No");
       }
     },
     closeTimbrado() {

@@ -86,7 +86,7 @@
                         <v-col>
                           <v-menu :close-on-content-click="false" transition="scale-transition" offset-y min-width="auto">
                             <template v-slot:activator="{ on, attrs }">
-                              <v-text-field v-model="dates" label="Fecha De Inicio - Fecha Fin"
+                              <v-text-field v-model="dateRangeText" label="Fecha De Inicio - Fecha Fin"
                                 prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" :rules="nameRules"
                                 required></v-text-field>
                             </template>
@@ -254,7 +254,7 @@ export default {
         numeroOficio: "",
         retencionIsr: "",
         ajusteIsr: "",
-        dates:"",
+        dates: "",
         subsidio: "",
         pagar: "",
       },
@@ -318,8 +318,7 @@ export default {
     },
     saveData: function () {
       let validate = this.$refs.form.validate();
-      if (!validate) {
-      } else {
+      if (validate) {
         if (this.editedIndex > -1) {
           axios
             .put("http://localhost:8082/CapitalHumano/" + this.editedItem.id, {
@@ -340,7 +339,7 @@ export default {
               this.getMapping();
               this.close();
             });
-        } else {
+        }else{
           axios
             .post("http://localhost:8082/CapitalHumano", {
               concepto: this.editedItem.concepto,
@@ -359,9 +358,10 @@ export default {
             .then(() => {
               this.getMapping();
               this.close();
-              this.$refs.form.reset();
             });
         }
+      } else {
+        console.log("No");
       }
     },
     buscarFecha() {
@@ -450,13 +450,13 @@ export default {
     closeErrorComp() {
       this.dialogError = false;
     },
-    close() {  
-      this.$refs.form.reset();
+    close() {
       this.dialog = false;
       this.dialogTimbrado = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
-        this.dateFechaPago = "";
+        this.dateFechaPago = "",
+        this.dates = [];
         this.editedIndex = -1;
       });
     },
@@ -493,6 +493,7 @@ export default {
 .btn-control {
   display: flex;
 }
+
 .div-filter {
   display: flex;
   margin-top: 30px;

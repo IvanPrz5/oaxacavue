@@ -23,7 +23,8 @@
       </template>
     </v-data-table>
     <v-dialog v-model="dialog" max-width="700px">
-      <FormTimbrado :timbradoItem="timbradoItem" :idTimbradoForm="idTimbradoForm" @closeCompTim="close" />
+      <FormTimbrado ref="formTimbrado" :timbradoItem="timbradoItem" :idTimbradoForm="idTimbradoForm"
+        @closeCompTim="close" />
     </v-dialog>
     <v-dialog v-model="dialogResultado" max-width="700px">
       <FormResultado :timbradoProp="timbradoProp" :idTimbrado="idTimbrado" @closeCompRes="close" />
@@ -79,9 +80,6 @@ export default {
     idTimbrado: "",
     idTimbradoForm: "",
   }),
-  watch: {
-
-  },
   created() {
     this.getMapping();
   },
@@ -129,17 +127,22 @@ export default {
       })
     },
     editItem(id) {
-      this.idTimbradoForm = id;
-      this.dialog = true;
-      // console.log(this.idTimbradoForm);
+      try {
+        this.idTimbradoForm = id;
+        this.dialog = true;
+        this.$refs.formTimbrado.getMapping(id);
+      } catch (error) {
+        console.log(error)
+      }
     },
+
     close() {
-      this.dialog = false;
+      this.dialog = false
       this.dialogResultado = false;
-      this.$nextTick(() => {
+      /* this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
-      });
+      }); */
     },
   },
 };
