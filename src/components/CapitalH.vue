@@ -121,10 +121,9 @@
                         </v-col>
                       </v-row>
                       <div>
-                        <label for="">{{calculaPago}}</label>
-                        {{editedItem.pagar}}
-                        <!-- <v-text-field :rules="numberRules" label="A Pagar" v-model="editedItem.pagar" required>
-                          {{ calculaPago }}</v-text-field> -->
+                        <label v-show="false" for="">{{ calculaPago }}</label>
+                        <v-text-field :rules="numberRules" label="A Pagar" v-model="editedItem.pagar"
+                          required></v-text-field>
                       </div>
                       <v-row v-show="false" class="main-div">
                         <v-col cols="12" md="4">
@@ -192,12 +191,10 @@ export default {
     ItemsTimbrado,
   },
   data: () => ({
-    nameRules: [
-      (v) => !!v || "Este campo es requerido",
-    ],
+    nameRules: [(v) => !!v || "Este campo es requerido"],
     numberRules: [
       (v) => !!v || "Este campo es requerido",
-      v => /^[0-9]+([.][0-9]+)?$/.test(v) || 'Valores entre 0-9',
+      (v) => /^[0-9]+([.][0-9]+)?$/.test(v) || "Valores entre 0-9",
     ],
     dialogError: false,
     showTxt: false,
@@ -270,33 +267,19 @@ export default {
       let retencionIsrLocal = this.editedItem.retencionIsr;
       let ajusteIsrLocal = this.editedItem.ajusteIsr;
       let subsidioAjuste = this.editedItem.subsidioAjuste;
+
       if (retencionIsrLocal == undefined || retencionIsrLocal.length == 0) {
         retencionIsrLocal = 0.0;
       }
       if (ajusteIsrLocal == undefined || ajusteIsrLocal.length == 0) {
         ajusteIsrLocal = 0.0;
-      } if (subsidioAjuste == undefined || subsidioAjuste.length == 0) {
+      }
+      if (subsidioAjuste == undefined || subsidioAjuste.length == 0) {
         subsidioAjuste = 0.0;
       }
-      /* console.log(retencionIsrLocal);
-      console.log(ajusteIsrLocal);
-      console.log(subsidioAjuste); */
-      console.log(retencionIsrLocal - ajusteIsrLocal - subsidioAjuste);
-      this.editedItem.pagar = retencionIsrLocal - ajusteIsrLocal - subsidioAjuste;
-      console.log(this.editedItem.pagar + "entro")
+      this.editedItem.pagar =
+        retencionIsrLocal - ajusteIsrLocal - subsidioAjuste;
       return retencionIsrLocal - ajusteIsrLocal - subsidioAjuste;
-      /* if (
-        this.editedItem.retencionIsr != null &&
-        this.editedItem.ajusteIsr != null &&
-        this.editedItem.subsidioAjuste != null
-      ) {
-        console.log("Entro");
-        this.editedItem.pagar =
-          this.editedItem.retencionIsr -
-          this.editedItem.ajusteIsr -
-          this.editedItem.subsidioAjuste;
-        return this.editedItem.pagar = this.editedItem.pagar.toFixed(2);
-      } */
     },
     formTitle() {
       return this.editedIndex === -1 ? "Agregar" : "Editar";
@@ -452,8 +435,7 @@ export default {
     editItem(item) {
       this.editedIndex = this.desserts.indexOf(item);
       axios
-        .get(
-          "http://localhost:8082/CapitalHumano/" + item.id)
+        .get("http://localhost:8082/CapitalHumano/" + item.id)
         .then((response) => {
           this.dialog = true;
           this.editedItem = response.data;
@@ -467,8 +449,7 @@ export default {
       this.dialogTimbrado = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
-        this.dateFechaPago = "",
-          this.dates = [];
+        (this.dateFechaPago = ""), (this.dates = []);
         this.editedIndex = -1;
       });
     },

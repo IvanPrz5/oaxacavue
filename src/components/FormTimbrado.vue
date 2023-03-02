@@ -258,6 +258,13 @@ export default {
     },
     closeTimbrado() {
       this.$emit("closeCompTim");
+      this.$refs.form.reset();
+      /* this.editedItem = "";
+      this.descripcionSNFC = "";
+      this.descripcionStatus = "";
+      this.dates = [];
+      this.dateFechaPago = "";
+      this.dateFechaSubida = ""; */
       /* this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
