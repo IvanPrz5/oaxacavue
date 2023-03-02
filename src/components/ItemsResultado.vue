@@ -11,7 +11,7 @@
       </template>
     </v-data-table>
     <v-dialog v-model="dialogResultado" max-width="700px">
-      <FormResultado resultadoProp="resultadoProp" @closeCompRes="close" :idResultado="idResultado" />
+      <FormResultado ref="formResultado" :resultadoProp="resultadoProp" @closeCompRes="close" :idResultado="idResultado" />
     </v-dialog>
   </v-container>
 </template>
@@ -30,7 +30,7 @@ export default{
   },
   data: () =>({
     idResultado: "",
-    resultadoProp: "resultadoProp",
+    resultadoProp: true,
     dialogResultado: false,
     desserts: [],
     headers: [
@@ -75,8 +75,13 @@ export default{
       });
     },
     editItem(id){
-      this.idResultado = id;
-      this.dialogResultado = true;
+      try {
+        this.idResultado = id;
+        this.dialogResultado = true;
+        this.$refs.formResultado.getMapping(id);
+      } catch (error) {
+        console.log(error);
+      }
     },
     ocultarFila(id){
       let statusFalse = false;

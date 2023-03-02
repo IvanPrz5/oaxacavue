@@ -121,8 +121,10 @@
                         </v-col>
                       </v-row>
                       <div>
-                        <v-text-field :rules="numberRules" label="A Pagar" v-model="editedItem.pagar" readonly required>
-                          {{ calculaPago }}</v-text-field>
+                        <label for="">{{calculaPago}}</label>
+                        {{editedItem.pagar}}
+                        <!-- <v-text-field :rules="numberRules" label="A Pagar" v-model="editedItem.pagar" required>
+                          {{ calculaPago }}</v-text-field> -->
                       </div>
                       <v-row v-show="false" class="main-div">
                         <v-col cols="12" md="4">
@@ -174,17 +176,13 @@
       </template>
     </v-data-table>
     <v-dialog v-model="dialogTimbrado" max-width="700px">
-      <FormTimbrado :capitalH="capitalH" :idCapitalH="idCapitalH" @closeCompTim="close" />
-    </v-dialog>
-    <v-dialog v-model="dialogError" max-width="300px">
-      <ErrorComponent @closeErrorComp="closeErrorComp" />
+      <FormTimbrado :capitalHumanoItem="capitalHumanoItem" :idCapitalH="idCapitalH" @closeCompTim="close" />
     </v-dialog>
   </v-container>
 </template>
 
 <script>
 import axios from "axios";
-import ErrorComponent from "./ErrorComponent.vue";
 import FormTimbrado from "./FormTimbrado.vue";
 import ItemsTimbrado from "./ItemsTimbrado.vue";
 export default {
@@ -192,7 +190,6 @@ export default {
   components: {
     FormTimbrado,
     ItemsTimbrado,
-    ErrorComponent,
   },
   data: () => ({
     nameRules: [
@@ -209,7 +206,7 @@ export default {
     fechaBusqueda: "",
     fechasRango: "",
     showCalendar: "",
-    capitalH: "CapitalProp",
+    capitalHumanoItem: true,
     dialog: false,
     dialogTimbrado: false,
     search: "",
@@ -256,7 +253,7 @@ export default {
         ajusteIsr: "",
         dates: "",
         subsidio: "",
-        pagar: "",
+        pagar: 0,
       },
     ],
   }),
@@ -269,6 +266,38 @@ export default {
     },
   },
   computed: {
+    calculaPago() {
+      let retencionIsrLocal = this.editedItem.retencionIsr;
+      let ajusteIsrLocal = this.editedItem.ajusteIsr;
+      let subsidioAjuste = this.editedItem.subsidioAjuste;
+      if (retencionIsrLocal == undefined || retencionIsrLocal.length == 0) {
+        retencionIsrLocal = 0.0;
+      }
+      if (ajusteIsrLocal == undefined || ajusteIsrLocal.length == 0) {
+        ajusteIsrLocal = 0.0;
+      } if (subsidioAjuste == undefined || subsidioAjuste.length == 0) {
+        subsidioAjuste = 0.0;
+      }
+      /* console.log(retencionIsrLocal);
+      console.log(ajusteIsrLocal);
+      console.log(subsidioAjuste); */
+      console.log(retencionIsrLocal - ajusteIsrLocal - subsidioAjuste);
+      this.editedItem.pagar = retencionIsrLocal - ajusteIsrLocal - subsidioAjuste;
+      console.log(this.editedItem.pagar + "entro")
+      return retencionIsrLocal - ajusteIsrLocal - subsidioAjuste;
+      /* if (
+        this.editedItem.retencionIsr != null &&
+        this.editedItem.ajusteIsr != null &&
+        this.editedItem.subsidioAjuste != null
+      ) {
+        console.log("Entro");
+        this.editedItem.pagar =
+          this.editedItem.retencionIsr -
+          this.editedItem.ajusteIsr -
+          this.editedItem.subsidioAjuste;
+        return this.editedItem.pagar = this.editedItem.pagar.toFixed(2);
+      } */
+    },
     formTitle() {
       return this.editedIndex === -1 ? "Agregar" : "Editar";
     },
@@ -280,20 +309,6 @@ export default {
     },
     dateRangeFecha() {
       return this.datesRango.join(" ~ ");
-    },
-    calculaPago: function () {
-      if (
-        this.editedItem.retencionIsr != null &&
-        this.editedItem.ajusteIsr != null &&
-        this.editedItem.subsidioAjuste != null
-      ) {
-        this.editedItem.pagar =
-          this.editedItem.retencionIsr -
-          this.editedItem.ajusteIsr -
-          this.editedItem.subsidioAjuste;
-        this.editedItem.pagar = this.editedItem.pagar.toFixed(2);
-        return this.editedItem.pagar;
-      }
     },
   },
   methods: {
@@ -339,7 +354,7 @@ export default {
               this.getMapping();
               this.close();
             });
-        }else{
+        } else {
           axios
             .post("http://localhost:8082/CapitalHumano", {
               concepto: this.editedItem.concepto,
@@ -447,16 +462,13 @@ export default {
         });
       // this.dialog = true;
     },
-    closeErrorComp() {
-      this.dialogError = false;
-    },
     close() {
       this.dialog = false;
       this.dialogTimbrado = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.dateFechaPago = "",
-        this.dates = [];
+          this.dates = [];
         this.editedIndex = -1;
       });
     },

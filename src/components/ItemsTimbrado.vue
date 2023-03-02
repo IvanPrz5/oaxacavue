@@ -50,8 +50,8 @@ export default {
   },
   data: () => ({
     dialog: false,
-    timbradoItem: "ItemsProp",
-    timbradoProp: "timbradoProp",
+    timbradoItem: true,
+    timbradoProp: true,
     result: [],
     expanded: [],
     desserts: [],
@@ -135,7 +135,6 @@ export default {
         console.log(error)
       }
     },
-
     close() {
       this.dialog = false
       this.dialogResultado = false;
