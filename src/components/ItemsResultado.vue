@@ -1,6 +1,6 @@
 <template>
-  <v-container>
-    <v-data-table style="background-color: #6868A7" :headers="headers" :items="desserts" class="elevation-1">
+  <v-container >
+    <v-data-table style="background-color: #AFE3CC" :headers="headers" :items="desserts" class="elevation-1" black>
       <template v-slot:[`item.actions`]="{ item }">
         <v-btn class="mr-3" elevation="1" color="primary" fab dark tile x-small @click="editItem(item.id)">
           <v-icon small> mdi-pencil </v-icon>
@@ -11,7 +11,7 @@
       </template>
     </v-data-table>
     <v-dialog v-model="dialogResultado" max-width="700px">
-      <FormResultado ref="formResultado" :resultadoProp="resultadoProp" @closeCompRes="close" :idResultado="idResultado" />
+      <FormResultado ref="formResultado" @actualizar="getMapping" :resultadoProp="resultadoProp" @closeCompRes="close" :idResultado="idResultado" />
     </v-dialog>
   </v-container>
 </template>
@@ -35,17 +35,17 @@ export default{
     desserts: [],
     headers: [
       { text: "ID", align:"start", value:"id" },
-      { text: "Resultado", value:"resultado" },
+      { text: "Resultado", value:"resultado", sortable: false, },
       { text: "Exitosos", value:"exito" },
       { text: "Fallidos", value:"fallidos" },
       { text: "Isr Timbrado", value:"isrTimbrado" },
-      { text: "Descarga (URL)", value:"urlDescarga" },
+      { text: "Descarga (URL)", value:"urlDescarga", sortable: false, },
       { text: "PDF", value:"pdf" },
       { text: "QR", value:"qr" },
       { text: "XML", value:"xml" },
       { text: "Fecha Fin", value:"fechaFinalizado" },
-      { text: "Observaciones", value:"observaciones" },
-      { text: "Opciones", value:"actions" }
+      { text: "Observaciones", value:"observaciones", sortable: false, },
+      { text: "Opciones", value:"actions", sortable: false }
     ],
   }),
   created(){
@@ -56,6 +56,7 @@ export default{
       this.desserts.length = "";
       axios.get("http://localhost:8082/Finalizado/dataFinalizado/" + this.idTimbradoHa + "/true").then((response) => {
         this.result = response.data.data;
+        /* this.desserts = response.data; */
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
             id: response.data[i].id,

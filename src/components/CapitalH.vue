@@ -170,12 +170,12 @@
       </template>
       <template v-slot:expanded-item="{ headers, item }">
         <td :colspan="headers.length">
-          <ItemsTimbrado :idCapitalHa="item.id" />
+          <ItemsTimbrado ref="itemTimbrado" :idCapitalHa="item.id" />
         </td>
       </template>
     </v-data-table>
     <v-dialog v-model="dialogTimbrado" max-width="700px">
-      <FormTimbrado :capitalHumanoItem="capitalHumanoItem" :idCapitalH="idCapitalH" @closeCompTim="close" />
+      <FormTimbrado :capitalHumanoItem="capitalHumanoItem" :idCapitalH="idCapitalH" @actualizar="actualizarTableTimbrado" @closeCompTim="close" />
     </v-dialog>
   </v-container>
 </template>
@@ -194,7 +194,7 @@ export default {
     nameRules: [(v) => !!v || "Este campo es requerido"],
     numberRules: [
       (v) => !!v || "Este campo es requerido",
-      (v) => /^[0-9]+([.][0-9]+)?$/.test(v) || "Valores entre 0-9",
+      (v) => /^[0-9]+([.][0-9]+)?$/.test(v) || "Ejemplo : 156.26",
     ],
     dialogError: false,
     showTxt: false,
@@ -210,9 +210,9 @@ export default {
     expanded: [],
     headers: [
       { text: "ID", align: "start", value: "id" },
-      { text: "Concepto", value: "concepto" },
-      { text: "Fondo", value: "fondo" },
-      { text: "Número de Oficio", value: "numeroOficio" },
+      { text: "Concepto", value: "concepto", sortable: false, },
+      { text: "Fondo", value: "fondo", sortable: false,},
+      { text: "Número de Oficio", value: "numeroOficio", sortable: false,},
       { text: "Fecha de Inicio", value: "fechaInicio" },
       { text: "Fecha Fin", value: "fechaFin" },
       { text: "Fecha Pago", value: "fechaPago" },
@@ -220,9 +220,8 @@ export default {
       { text: "Ajuste Isr", value: "ajusteIsr" },
       { text: "Subsidio", value: "subsidioAjuste" },
       { text: "A Pagar", value: "pagar" },
-      // { text: "Status", value:"status" },
       { text: "", value: "data-table-expand" },
-      { text: "Opciones", value: "actions" },
+      { text: "Opciones", value: "actions", sortable: false, },
     ],
     itemsFechas: ["Fecha De Inicio", "Fecha De Fin", "Fecha De Pago"],
     idCapitalH: "",
@@ -279,6 +278,7 @@ export default {
       }
       this.editedItem.pagar =
         retencionIsrLocal - ajusteIsrLocal - subsidioAjuste;
+      this.editedItem.pagar = this.editedItem.pagar.toFixed(2);
       return retencionIsrLocal - ajusteIsrLocal - subsidioAjuste;
     },
     formTitle() {
@@ -299,7 +299,6 @@ export default {
       this.dialogTimbrado = true;
       this.idCapitalH = id;
       this.idCapitalHa = id;
-      // console.log(this.idCapitalHa)
     },
     getMapping() {
       this.desserts.length = "";
@@ -318,49 +317,44 @@ export default {
       let validate = this.$refs.form.validate();
       if (validate) {
         if (this.editedIndex > -1) {
-          axios
-            .put("http://localhost:8082/CapitalHumano/" + this.editedItem.id, {
-              concepto: this.editedItem.concepto,
-              fondo: this.editedItem.fondo,
-              numeroOficio: this.editedItem.numeroOficio,
-              fechaInicio: this.dates[0],
-              fechaFin: this.dates[1],
-              fechaPago: this.dateFechaPago,
-              retencionIsr: this.editedItem.retencionIsr,
-              ajusteIsr: this.editedItem.ajusteIsr,
-              subsidioAjuste: this.editedItem.subsidioAjuste,
-              pagar: this.editedItem.pagar,
-              fechaCaptura: this.dateFechaCaptura,
-              status: this.status,
-            })
-            .then(() => {
-              this.getMapping();
-              this.close();
-            });
+          let url = "http://localhost:8082/CapitalHumano/" + this.editedItem.id;
+          let put = axios.put;
+          this.tipoDeGuardado(put, url);
         } else {
-          axios
-            .post("http://localhost:8082/CapitalHumano", {
-              concepto: this.editedItem.concepto,
-              fondo: this.editedItem.fondo,
-              numeroOficio: this.editedItem.numeroOficio,
-              fechaInicio: this.dates[0],
-              fechaFin: this.dates[1],
-              fechaPago: this.dateFechaPago,
-              retencionIsr: this.editedItem.retencionIsr,
-              ajusteIsr: this.editedItem.ajusteIsr,
-              subsidioAjuste: this.editedItem.subsidioAjuste,
-              pagar: this.editedItem.pagar,
-              fechaCaptura: this.dateFechaCaptura,
-              status: this.status,
-            })
-            .then(() => {
-              this.getMapping();
-              this.close();
-            });
+          let url = "http://localhost:8082/CapitalHumano";
+          let post = axios.post;
+          this.tipoDeGuardado(post, url);
         }
       } else {
-        console.log("No");
+        console.log("Error");
       }
+    },
+    tipoDeGuardado(tipoAxios, direccion) {
+      tipoAxios(direccion, {
+        concepto: this.editedItem.concepto,
+        fondo: this.editedItem.fondo,
+        numeroOficio: this.editedItem.numeroOficio,
+        fechaInicio: this.dates[0],
+        fechaFin: this.dates[1],
+        fechaPago: this.dateFechaPago,
+        retencionIsr: this.editedItem.retencionIsr,
+        ajusteIsr: this.editedItem.ajusteIsr,
+        subsidioAjuste: this.editedItem.subsidioAjuste,
+        pagar: this.editedItem.pagar,
+        fechaCaptura: this.dateFechaCaptura,
+        status: this.status,
+      })
+        .then(() => {
+          this.getMapping();
+          this.close();
+        })
+        .catch(() => {
+          this.close();
+          console.log("Error");
+        });
+    },
+    actualizarTableTimbrado(){
+      this.$refs.itemTimbrado.getMapping();
     },
     buscarFecha() {
       let validate = this.$refs.form.validate();
@@ -369,58 +363,42 @@ export default {
       } else {
         if (this.showCalendar === "Fecha De Pago") {
           this.desserts.length = "";
-          axios
-            .get(
-              "http://localhost:8082/CapitalHumano/fechasPago/" +
-              this.datesRango[0] +
-              "/" +
-              this.datesRango[1]
-            )
-            .then((response) => {
-              console.log("Entro");
-              this.desserts = response.data;
-              this.menuFechaBusqueda = false;
-              this.algo = false;
-              this.showFilter = true;
-              this.showTxt = true;
-            });
+          let url =
+            "http://localhost:8082/CapitalHumano/fechasPago/" +
+            this.datesRango[0] +
+            "/" +
+            this.datesRango[1];
+          this.tipoFechaBusqueda(url);
         }
         if (this.showCalendar === "Fecha De Inicio") {
           this.desserts.length = "";
-          axios
-            .get(
-              "http://localhost:8082/CapitalHumano/fechasInicio/" +
-              this.datesRango[0] +
-              "/" +
-              this.datesRango[1]
-            )
-            .then((response) => {
-              console.log("Entro");
-              this.desserts = response.data;
-              this.menuFechaBusqueda = false;
-              this.algo = false;
-              this.showFilter = true;
-              this.showTxt = true;
-            });
+          let url =
+            "http://localhost:8082/CapitalHumano/fechasInicio/" +
+            this.datesRango[0] +
+            "/" +
+            this.datesRango[1];
+          this.tipoFechaBusqueda(url);
         }
         if (this.showCalendar === "Fecha De Fin") {
           this.desserts.length = "";
-          axios
-            .get(
-              "http://localhost:8082/CapitalHumano/fechasFin/" +
-              this.datesRango[0] +
-              "/" +
-              this.datesRango[1]
-            )
-            .then((response) => {
-              this.desserts = response.data;
-              this.menuFechaBusqueda = false;
-              this.algo = false;
-              this.showFilter = true;
-              this.showTxt = true;
-            });
+          let url =
+            "http://localhost:8082/CapitalHumano/fechasFin/" +
+            this.datesRango[0] +
+            "/" +
+            this.datesRango[1];
+          this.tipoFechaBusqueda(url);
         }
       }
+    },
+    tipoFechaBusqueda(direccion) {
+      axios.get(direccion).then((response) => {
+        console.log("Entro");
+        this.desserts = response.data;
+        this.menuFechaBusqueda = false;
+        this.algo = false;
+        this.showFilter = true;
+        this.showTxt = true;
+      });
     },
     ocultarFila(id) {
       let statusFalse = false;
@@ -434,17 +412,20 @@ export default {
     },
     editItem(item) {
       this.editedIndex = this.desserts.indexOf(item);
-      axios
-        .get("http://localhost:8082/CapitalHumano/" + item.id)
-        .then((response) => {
-          this.dialog = true;
-          this.editedItem = response.data;
-          this.dateFechaPago = response.data.fechaPago;
-          this.dates = [response.data.fechaInicio, response.data.fechaFin];
-        });
+      try {
+        axios
+          .get("http://localhost:8082/CapitalHumano/" + item.id)
+          .then((response) => {
+            this.dialog = true;
+            this.editedItem = response.data;
+            this.dateFechaPago = response.data.fechaPago;
+            this.dates = [response.data.fechaInicio, response.data.fechaFin];
+          });
+      } catch (error) { }
       // this.dialog = true;
     },
     close() {
+      this.$refs.form.resetValidation();
       this.dialog = false;
       this.dialogTimbrado = false;
       this.$nextTick(() => {

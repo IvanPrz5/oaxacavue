@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-data-table style="background-color: #5DBDB3" :headers="headers" :items="desserts" class="elevation-1"
+    <v-data-table style="background-color: #AED0E3" :headers="headers" :items="desserts" class="elevation-1"
       :expanded.sync="expanded" show-expand>
       <!-- hide-default-footer -->
       <template v-slot:[`item.actions`]="{ item }">
@@ -24,7 +24,7 @@
     </v-data-table>
     <v-dialog v-model="dialog" max-width="700px">
       <FormTimbrado ref="formTimbrado" :timbradoItem="timbradoItem" :idTimbradoForm="idTimbradoForm"
-        @closeCompTim="close" />
+        @closeCompTim="close" @actualizar="getMapping"/>
     </v-dialog>
     <v-dialog v-model="dialogResultado" max-width="700px">
       <FormResultado :timbradoProp="timbradoProp" :idTimbrado="idTimbrado" @closeCompRes="close" />
@@ -57,24 +57,24 @@ export default {
     desserts: [],
     headers: [
       { text: "ID", align: "start", value: "id" },
-      { text: "Archivo", value: "archivo" },
-      { text: "Archivo Timbrar", value: "archivoTimbrar" },
+      { text: "Archivo", value: "archivo", sortable: false, },
+      { text: "Archivo Timbrar", value: "archivoTimbrar", sortable: false, },
       { text: "Fecha Inicio", value: "fechaInicio" },
       { text: "Fecha Fin", value: "fechaFin" },
       { text: "Fecha Pago", value: "fechaPago" },
       { text: "Fecha Subida", value: "fechaSubida" },
-      { text: "SNFC", align: "center", value: "descripcionSNFC" },
-      { text: "Estado", value: "descripcionStatus" },
+      { text: "SNFC", align: "center", value: "descripcionSNFC", sortable: false, },
+      { text: "Estado", value: "descripcionStatus", sortable: false, },
       { text: "Empleados", align: "center", value: "totalEmpleados" },
       { text: "Neto", value: "neto" },
       { text: "ISR", value: "importeIsr" },
       { text: "Ejecuciones", align: "center", value: "numEjecuciones" },
-      { text: "Observaciones", value: "observaciones" },
-      { text: "Documento Contable", value: "documentoContable" },
+      { text: "Documento Contable", value: "documentoContable", sortable: false },
       { text: "Numero", align: "center", value: "numero" },
       { text: "Nomina", value: "nomina" },
+      { text: "Observaciones", value: "observaciones", sortable: false, },
       { text: "", value: "data-table-expand" },
-      { text: "Opciones", value: "actions" },
+      { text: "Opciones", value: "actions", sortable: false },
     ],
     dialogResultado: false,
     idTimbrado: "",

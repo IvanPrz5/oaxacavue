@@ -30,15 +30,15 @@
                 outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field :rules="txtRules" label="PDF" v-model="editedItem.pdf" dense required outlined></v-text-field>
+              <v-text-field :rules="numberRules" label="PDF" v-model="editedItem.pdf" dense required outlined></v-text-field>
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="12" md="4">
-              <v-text-field :rules="txtRules" label="QR" v-model="editedItem.qr" dense required outlined></v-text-field>
+              <v-text-field :rules="numberRules" label="QR" v-model="editedItem.qr" dense required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field :rules="txtRules" label="XML" v-model="editedItem.xml" dense required outlined></v-text-field>
+              <v-text-field :rules="numberRules" label="XML" v-model="editedItem.xml" dense required outlined></v-text-field>
             </v-col>
           </v-row>
           <div>
@@ -178,6 +178,7 @@ export default {
       })
         .then(() => {
           this.closeResultado();
+          this.$emit("actualizar");
         })
         .catch(() => {
           this.closeResultado();
@@ -185,10 +186,12 @@ export default {
     },
     closeResultado() {
       this.$emit("closeCompRes");
-      /* this.$nextTick(() => {
+      this.$refs.form.resetValidation();
+      this.$nextTick(() => {
           this.editedItem = Object.assign({}, this.defaultItem);
+          this.dateFechaFin = "";
           this.editedIndex = -1;
-        }); */
+        });
     },
 
     onlyNumber($event) {

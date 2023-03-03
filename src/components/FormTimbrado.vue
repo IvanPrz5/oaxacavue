@@ -8,9 +8,13 @@
         <v-form ref="form" lazy-validation>
           <v-row class="form-calendar">
             <v-col cols="12" md="4">
+              <v-file-input id="archivo" label="Guardar Archivo" outlined dense></v-file-input>
+              <v-btn @click="subirArchivo">Subir Archivo</v-btn>
+            </v-col>
+            <!-- <v-col cols="12" md="4">
               <v-text-field :rules="txtRules" label="Archivo" v-model="editedItem.archivo" required dense
                 outlined></v-text-field>
-            </v-col>
+            </v-col> -->
             <v-col cols="12" md="4">
               <v-text-field :rules="txtRules" label="Archivo Timbrado" v-model="editedItem.archivoTimbrar" required dense
                 outlined></v-text-field>
@@ -124,11 +128,11 @@ export default {
     txtRules: [(v) => !!v || "Este campo es requerido"],
     numberFloatRules: [
       (v) => !!v || "Este campo es requerido",
-      (v) => /^[0-9]+([.][0-9]+)?$/.test(v) || "Valores entre 0-9",
+      (v) => /^[0-9]+([.][0-9]+)?$/.test(v) || "Ejemplo : 156.26",
     ],
     numberRules: [
       (v) => !!v || "Este campo es requerido",
-      (v) => /^[0-9]+$/.test(v) || "Solo números enteros",
+      (v) => /^[0-9]+$/.test(v) || "Solo números enteros: 0-9",
     ],
     search: "",
     result: {},
@@ -199,7 +203,7 @@ export default {
             .then((response) => {
               // console.log(response.data);
               this.editedItem = response.data;
-              this.editedItem.idCapitalHumano  = response.data.capitalHEntity.id;
+              this.editedItem.idCapitalHumano = response.data.capitalHEntity.id;
               this.descripcionSNFC = response.data.catalogoSNFCEntity.id;
               this.descripcionStatus = response.data.catalogoStatusEntity.id;
               this.dates = [response.data.fechaInicio, response.data.fechaFin];
@@ -215,7 +219,7 @@ export default {
       if (validarForm) {
         if (this.capitalHumanoItem) {
           let url = "http://localhost:8082/Timbrado";
-          let post = axios.post
+          let post = axios.post;
           this.tipoDeGuardado(post, url);
         } else if (this.timbradoItem) {
           let url = "http://localhost:8082/Timbrado/" + this.idTimbradoForm;
@@ -252,23 +256,24 @@ export default {
       })
         .then(() => {
           this.closeTimbrado();
-        }).catch(() => {
+          this.$emit("actualizar");
+        })
+        .catch(() => {
           this.closeTimbrado();
         });
     },
     closeTimbrado() {
       this.$emit("closeCompTim");
-      this.$refs.form.reset();
-      /* this.editedItem = "";
-      this.descripcionSNFC = "";
-      this.descripcionStatus = "";
-      this.dates = [];
-      this.dateFechaPago = "";
-      this.dateFechaSubida = ""; */
-      /* this.$nextTick(() => {
+      this.$refs.form.resetValidation();
+      this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
+        this.descripcionSNFC = "";
+        this.descripcionStatus = "";
+        this.dates = [];
+        this.dateFechaPago = "";
+        this.dateFechaSubida = "";
         this.editedIndex = -1;
-      }); */
+      });
     },
     onlyNumber($event) {
       let keyCode = $event.keyCode ? $event.keyCode : $event.which;
@@ -284,6 +289,18 @@ export default {
         .toISOString()
         .substr(0, 10);
     },
+    async subirArchivo() {
+      console.log("Subir");
+      /* //creating form data object and append file into that form data
+      let formData = new FormData();
+      formData.append("file", fileupload.files[0]);
+      //network request using POST method of fetch
+      await fetch('PASTE_YOUR_URL_HERE', {
+        method: "POST",
+        body: formData
+      });
+      alert('You have successfully upload the file!'); */
+    }
   },
 };
 </script>
