@@ -5,10 +5,10 @@
     </v-card-title>
     <v-card-text>
       <v-container>
-        <v-form ref="form" lazy-validation>
+        <v-form ref="form" lazy-validation enctype="multipart/form-data">
           <v-row class="form-calendar">
             <v-col cols="12" md="4">
-              <v-file-input id="archivo" label="Guardar Archivo" outlined dense></v-file-input>
+              <v-file-input v-model="archivo" label="Guardar Archivo" value="file" outlined dense></v-file-input>
               <v-btn @click="subirArchivo">Subir Archivo</v-btn>
             </v-col>
             <!-- <v-col cols="12" md="4">
@@ -163,6 +163,7 @@ export default {
         observaciones: "",
       },
     ],
+    archivo: "",
   }),
   created() {
     this.getMapping();
@@ -289,18 +290,22 @@ export default {
         .toISOString()
         .substr(0, 10);
     },
-    async subirArchivo() {
-      console.log("Subir");
-      /* //creating form data object and append file into that form data
-      let formData = new FormData();
-      formData.append("file", fileupload.files[0]);
-      //network request using POST method of fetch
-      await fetch('PASTE_YOUR_URL_HERE', {
-        method: "POST",
-        body: formData
-      });
-      alert('You have successfully upload the file!'); */
+    /* onImageUpload() {
+      let file = this.archivo;
+      this.formData = new FormData();
+      this.formData.append("file", file);
+      console.log("entro")
+    }, */
+    subirArchivo() {
+      let instFormData = new FormData();
+      instFormData.append('file', this.archivo);
+      axios.post("http://localhost:8082/Archivo", instFormData)
+        .then(function (result) {
+          console.log(result);
+        }, function (error) {
+          console.log(error);
+        });
     }
-  },
+  }
 };
 </script>
