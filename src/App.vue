@@ -1,21 +1,13 @@
 <template>
-  <v-app>
-    <v-main>
-      <CapitalH />
-    </v-main>
+  <v-app id="app">
+    <router-view/>
   </v-app>
 </template>
 
 <script>
-import CapitalH from "./components/CapitalH.vue";
-
 export default {
-  name: "App",
-  components: {
-    CapitalH,
-},
+  name: 'App',
   data: () => ({
-    //
   }),
-};
+}
 </script>

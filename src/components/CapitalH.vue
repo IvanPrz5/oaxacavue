@@ -1,7 +1,7 @@
 <template>
   <v-container class="container">
     <v-data-table :headers="headers" :items="desserts" :expanded.sync="expanded" show-expand class="elevation-1">
-      <template v-slot:top>
+      <!-- <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title class="title">Capital Humano</v-toolbar-title>
           <v-divider class="mx-6" inset vertical></v-divider>
@@ -143,9 +143,9 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="error darken-1" text @click="close">
-                    Cancelar
-                  </v-btn>
+                    <v-btn color="error darken-1" text @click="close">
+                      Cancelar
+                    </v-btn>
                   <v-btn color="blue darken-1" text @click="saveData">
                     Guardar
                   </v-btn>
@@ -172,11 +172,11 @@
         <td :colspan="headers.length">
           <ItemsTimbrado ref="itemTimbrado" :idCapitalHa="item.id" />
         </td>
-      </template>
+      </template> -->
     </v-data-table>
-    <v-dialog v-model="dialogTimbrado" max-width="700px">
+    <!-- <v-dialog v-model="dialogTimbrado" max-width="700px">
       <FormTimbrado :capitalHumanoItem="capitalHumanoItem" :idCapitalH="idCapitalH" @actualizar="actualizarTableTimbrado" @closeCompTim="close" />
-    </v-dialog>
+    </v-dialog> -->
   </v-container>
 </template>
 
@@ -303,7 +303,7 @@ export default {
     getMapping() {
       this.desserts.length = "";
       axios
-        .get("http://localhost:8082/CapitalHumano/dataCapital/true")
+        .get("http://localhost:8082/api/CapitalHumano/dataCapital/true")
         .then((response) => {
           this.result = response.data.data;
           this.desserts = response.data;
@@ -313,15 +313,15 @@ export default {
           this.showTxt = false;
         });
     },
-    saveData: function () {
+    /* saveData: function () {
       let validate = this.$refs.form.validate();
       if (validate) {
         if (this.editedIndex > -1) {
-          let url = "http://localhost:8082/CapitalHumano/" + this.editedItem.id;
+          let url = "http://localhost:8082/api/CapitalHumano/" + this.editedItem.id;
           let put = axios.put;
           this.tipoDeGuardado(put, url);
         } else {
-          let url = "http://localhost:8082/CapitalHumano";
+          let url = "http://localhost:8082/api/CapitalHumano";
           let post = axios.post;
           this.tipoDeGuardado(post, url);
         }
@@ -364,7 +364,7 @@ export default {
         if (this.showCalendar === "Fecha De Pago") {
           this.desserts.length = "";
           let url =
-            "http://localhost:8082/CapitalHumano/fechasPago/" +
+            "http://localhost:8082/api/CapitalHumano/fechasPago/" +
             this.datesRango[0] +
             "/" +
             this.datesRango[1];
@@ -373,7 +373,7 @@ export default {
         if (this.showCalendar === "Fecha De Inicio") {
           this.desserts.length = "";
           let url =
-            "http://localhost:8082/CapitalHumano/fechasInicio/" +
+            "http://localhost:8082/api/CapitalHumano/fechasInicio/" +
             this.datesRango[0] +
             "/" +
             this.datesRango[1];
@@ -382,7 +382,7 @@ export default {
         if (this.showCalendar === "Fecha De Fin") {
           this.desserts.length = "";
           let url =
-            "http://localhost:8082/CapitalHumano/fechasFin/" +
+            "http://localhost:8082/api/CapitalHumano/fechasFin/" +
             this.datesRango[0] +
             "/" +
             this.datesRango[1];
@@ -403,7 +403,7 @@ export default {
     ocultarFila(id) {
       let statusFalse = false;
       axios
-        .put("http://localhost:8082/CapitalHumano/statusCapital/" + id, {
+        .put("http://localhost:8082/api/CapitalHumano/statusCapital/" + id, {
           status: statusFalse,
         })
         .then(() => {
@@ -414,7 +414,7 @@ export default {
       this.editedIndex = this.desserts.indexOf(item);
       try {
         axios
-          .get("http://localhost:8082/CapitalHumano/" + item.id)
+          .get("http://localhost:8082/api/CapitalHumano/" + item.id)
           .then((response) => {
             this.dialog = true;
             this.editedItem = response.data;
@@ -457,7 +457,7 @@ export default {
       )
         .toISOString()
         .substr(0, 10);
-    },
+    }, */
   },
 };
 </script>
