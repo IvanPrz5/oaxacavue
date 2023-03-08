@@ -1,11 +1,10 @@
 <template>
-  <div class="home">
+  <v-container class="home">
     <Login />
-  </div>
+  </v-container>
 </template>
 
 <script>
-// @ is an alias to /src
 import Login from '../components/Login.vue'
 
 export default {
@@ -15,3 +14,11 @@ export default {
   }
 }
 </script>
+<style>
+.home{
+  display: flex;
+  width: 500px;
+  margin: 150px auto;
+  background-color: rgb(194, 196, 199);
+}
+</style>

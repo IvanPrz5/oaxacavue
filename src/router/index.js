@@ -2,19 +2,23 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import CapitalH from '../components/CapitalH.vue'
+import auth from '@/Service/auth'
+
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/login',
-    component: HomeView
+    path: '/',
+    component: HomeView,
+    name: 'Login'
   },
   {
-    path: '/',
+    path: '/CapitalHumano',
     component: CapitalH,
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
+    name: 'CapitalHumano',
+    meta: {
+      requiresAuth: true
+    }
     // component: () => import(/* webpackChunkName: "about" */ '../components/CapitalH.vue')
   }
 ]
@@ -24,5 +28,17 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
+
+router.beforeEach((to, from, next) => {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (auth.token != undefined) {
+      next();
+    } else {
+      next({ name: 'Login' });
+    }
+  } else {
+    next();
+  }
+});
 
 export default router

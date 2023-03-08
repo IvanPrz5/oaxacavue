@@ -1,7 +1,7 @@
 <template>
   <v-container class="container">
     <v-data-table :headers="headers" :items="desserts" :expanded.sync="expanded" show-expand class="elevation-1">
-      <!-- <template v-slot:top>
+      <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title class="title">Capital Humano</v-toolbar-title>
           <v-divider class="mx-6" inset vertical></v-divider>
@@ -172,11 +172,11 @@
         <td :colspan="headers.length">
           <ItemsTimbrado ref="itemTimbrado" :idCapitalHa="item.id" />
         </td>
-      </template> -->
+      </template>
     </v-data-table>
-    <!-- <v-dialog v-model="dialogTimbrado" max-width="700px">
+    <v-dialog v-model="dialogTimbrado" max-width="700px">
       <FormTimbrado :capitalHumanoItem="capitalHumanoItem" :idCapitalH="idCapitalH" @actualizar="actualizarTableTimbrado" @closeCompTim="close" />
-    </v-dialog> -->
+    </v-dialog>
   </v-container>
 </template>
 
@@ -184,6 +184,8 @@
 import axios from "axios";
 import FormTimbrado from "./FormTimbrado.vue";
 import ItemsTimbrado from "./ItemsTimbrado.vue";
+import auth from "../Service/auth";
+
 export default {
   name: "CapitalH",
   components: {
@@ -252,6 +254,7 @@ export default {
         pagar: 0,
       },
     ],
+    token: "",
   }),
   created() {
     this.getMapping();
@@ -303,8 +306,15 @@ export default {
     getMapping() {
       this.desserts.length = "";
       axios
-        .get("http://localhost:8082/api/CapitalHumano/dataCapital/true")
+        .get("http://localhost:8082/api/CapitalHumano/dataCapital/true", {
+          headers: {
+            "Access-Control-Allow-Origin" : "*",
+            "Content-type": "Application/json",
+            "Authorization": `Bearer ${auth.token}`
+            }
+        })
         .then((response) => {
+          console.log(auth.token)
           this.result = response.data.data;
           this.desserts = response.data;
           this.menuFechaBusqueda = false;
@@ -313,7 +323,7 @@ export default {
           this.showTxt = false;
         });
     },
-    /* saveData: function () {
+    saveData: function () {
       let validate = this.$refs.form.validate();
       if (validate) {
         if (this.editedIndex > -1) {
@@ -457,7 +467,7 @@ export default {
       )
         .toISOString()
         .substr(0, 10);
-    }, */
+    },
   },
 };
 </script>
