@@ -18,7 +18,7 @@
       </template>
       <template v-slot:expanded-item="{ headers, item }">
         <td :colspan="headers.length">
-          <ItemsResultado :idTimbradoHa="item.id" />
+          <ItemsResultado ref="itemResultado" :idTimbradoHa="item.id" />
         </td>
       </template>
     </v-data-table>
@@ -27,7 +27,7 @@
         @closeCompTim="close" @actualizar="getMapping"/>
     </v-dialog>
     <v-dialog v-model="dialogResultado" max-width="700px">
-      <FormResultado :timbradoProp="timbradoProp" :idTimbrado="idTimbrado" @closeCompRes="close" />
+      <FormResultado :timbradoProp="timbradoProp" :idTimbrado="idTimbrado" @closeCompRes="close" @actualizar="actualizarTableResultado"/>
     </v-dialog>
   </v-container>
 </template>
@@ -91,7 +91,7 @@ export default {
     },
     getMapping() {
       this.desserts.length = "";
-      axios.get("http://localhost:8082/Timbrado/dataTimbrado/" + this.idCapitalHa + "/true").then((response) => {
+      axios.get("http://localhost:8082/api/Timbrado/dataTimbrado/" + this.idCapitalHa + "/true").then((response) => {
         this.result = response.data.data;
         for (let i = 0; i < response.data.length; i++) {
           this.desserts.push({
@@ -118,9 +118,12 @@ export default {
         }
       });
     },
+    actualizarTableResultado() {
+      this.$refs.itemResultado.getMapping();
+    },
     ocultarFila(id) {
       let statusFalse = false;
-      axios.put("http://localhost:8082/Timbrado/statusTimbrado/" + id, {
+      axios.put("http://localhost:8082/api/Timbrado/statusTimbrado/" + id, {
         status: statusFalse,
       }).then(() => {
         this.getMapping();

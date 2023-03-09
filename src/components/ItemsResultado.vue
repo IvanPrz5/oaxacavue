@@ -54,7 +54,7 @@ export default{
   methods: {
     getMapping() {
       this.desserts.length = "";
-      axios.get("http://localhost:8082/Finalizado/dataFinalizado/" + this.idTimbradoHa + "/true").then((response) => {
+      axios.get("http://localhost:8082/api/Finalizado/dataFinalizado/" + this.idTimbradoHa + "/true").then((response) => {
         this.result = response.data.data;
         /* this.desserts = response.data; */
         for (let i = 0; i < response.data.length; i++) {
@@ -86,7 +86,7 @@ export default{
     },
     ocultarFila(id){
       let statusFalse = false;
-      axios.put("http://localhost:8082/Finalizado/statusFinalizado/" + id, {
+      axios.put("http://localhost:8082/api/Finalizado/statusFinalizado/" + id, {
         status : statusFalse,
       }).then(()=>{
         this.getMapping();

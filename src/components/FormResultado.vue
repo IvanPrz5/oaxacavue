@@ -136,7 +136,7 @@ export default {
         }
         try {
           axios
-            .get("http://localhost:8082/Finalizado/" + idResultadoTable)
+            .get("http://localhost:8082/api/Finalizado/" + idResultadoTable)
             .then((response) => {
               this.editedItem = response.data;
               this.dateFechaFin = response.data.fechaFinalizado;
@@ -148,11 +148,11 @@ export default {
       let validarForm = this.$refs.form.validate();
       if (validarForm) {
         if (this.timbradoProp) {
-          let url = "http://localhost:8082/Finalizado";
+          let url = "http://localhost:8082/api/Finalizado";
           let post = axios.post;
           this.tipoDeGuardado(post, url);
         } else if (this.resultadoProp) {
-          let url = "http://localhost:8082/Finalizado/" + this.idResultado;
+          let url = "http://localhost:8082/api/Finalizado/" + this.idResultado;
           let put = axios.put;
           this.tipoDeGuardado(put, url);
         }

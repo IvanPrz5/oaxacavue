@@ -8,8 +8,11 @@
         <v-form ref="form" lazy-validation enctype="multipart/form-data">
           <v-row class="form-calendar">
             <v-col cols="12" md="4">
-              <v-file-input v-model="archivo" label="Guardar Archivo" value="file" outlined dense></v-file-input>
-              <v-btn @click="subirArchivo">Subir Archivo</v-btn>
+              <v-file-input v-model="archivo" label="Guardar Archivo" value="file" outlined
+                dense></v-file-input>
+                <!-- <v-text-field v-model="name" required dense outlined></v-text-field>
+                <v-text-field v-model="algo" required dense outlined></v-text-field>
+                <v-btn @click="subirArchivo">Subir Archivo</v-btn> -->
             </v-col>
             <!-- <v-col cols="12" md="4">
               <v-text-field :rules="txtRules" label="Archivo" v-model="editedItem.archivo" required dense
@@ -114,6 +117,8 @@
 
 <script>
 import axios from "axios";
+import auth from "../Service/auth";
+
 export default {
   name: "FormTimbrado",
   components: {},
@@ -164,6 +169,8 @@ export default {
       },
     ],
     archivo: "",
+    name: "",
+    algo: "",
   }),
   created() {
     this.getMapping();
@@ -184,12 +191,14 @@ export default {
       this.dialog = true;
     },
     getSNFC() {
-      axios.get("http://localhost:8082/SNFC").then((response) => {
+      axios.get("http://localhost:8082/api/SNFC", {
+      }).then((response) => {
         this.snfc = response.data;
       });
     },
     getStatus() {
-      axios.get("http://localhost:8082/Status").then((response) => {
+      axios.get("http://localhost:8082/api/Status", {
+      }).then((response) => {
         this.statusTable = response.data;
       });
     },
@@ -200,7 +209,7 @@ export default {
         }
         try {
           axios
-            .get("http://localhost:8082/Timbrado/" + idTimbradoTable)
+            .get("http://localhost:8082/api/Timbrado/" + idTimbradoTable)
             .then((response) => {
               // console.log(response.data);
               this.editedItem = response.data;
@@ -219,11 +228,33 @@ export default {
       let validarForm = this.$refs.form.validate();
       if (validarForm) {
         if (this.capitalHumanoItem) {
-          let url = "http://localhost:8082/Timbrado";
+          let instFormData = new FormData();
+          instFormData.append('file', this.editedItem.archivo);
+          let url = "http://localhost:8082/api/Timbrado";
           let post = axios.post;
-          this.tipoDeGuardado(post, url);
+          // this.tipoDeGuardado(post, url);
+          post(url, instFormData, {
+            // archivo: this.editedItem.archivo,
+            archivoTimbrar: this.editedItem.archivoTimbrar,
+            totalEmpleados: this.editedItem.totalEmpleados,
+            fechaInicio: this.dates[0],
+            fechaFin: this.dates[1],
+            fechaPago: this.dateFechaPago,
+            catalogoSNFCEntity: { id: this.descripcionSNFC },
+            catalogoStatusEntity: { id: this.descripcionStatus },
+            fechaSubida: this.dateFechaSubida,
+            importeIsr: this.editedItem.importeIsr,
+            neto: this.editedItem.neto,
+            documentoContable: this.editedItem.documentoContable,
+            numero: this.editedItem.numero,
+            numEjecuciones: this.editedItem.numEjecuciones,
+            nomina: this.editedItem.nomina,
+            capitalHEntity: { id: this.idCapitalH },
+            observaciones: this.editedItem.observaciones,
+            status: this.status,
+          })
         } else if (this.timbradoItem) {
-          let url = "http://localhost:8082/Timbrado/" + this.idTimbradoForm;
+          let url = "http://localhost:8082/api/Timbrado/" + this.idTimbradoForm;
           let put = axios.put;
           this.tipoDeGuardado(put, url);
         }
@@ -296,16 +327,23 @@ export default {
       this.formData.append("file", file);
       console.log("entro")
     }, */
-    subirArchivo() {
+    /* subirArchivo() {
       let instFormData = new FormData();
       instFormData.append('file', this.archivo);
-      axios.post("http://localhost:8082/Archivo", instFormData)
+      console.log(instFormData);
+      console.log(this.name);
+      console.log(this.algo);
+
+      axios.post("http://localhost:8082/api/Archivo", instFormData, {
+        name: this.name,
+        algo: this.algo,
+      })
         .then(function (result) {
-          console.log(result);
+          console.log("no guardo");
         }, function (error) {
-          console.log(error);
+          console.log("no guardo");
         });
-    }
+    } */
   }
 };
 </script>

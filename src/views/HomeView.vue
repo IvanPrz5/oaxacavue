@@ -16,9 +16,10 @@ export default {
 </script>
 <style>
 .home{
+  border-radius: 10px;
   display: flex;
   width: 500px;
   margin: 150px auto;
-  background-color: rgb(194, 196, 199);
+  background-color: rgb(235, 238, 243);
 }
 </style>

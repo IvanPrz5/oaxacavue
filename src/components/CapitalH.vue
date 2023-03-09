@@ -56,6 +56,10 @@
           <template>
             <v-dialog v-model="dialog" max-width="650px">
               <template v-slot:activator="{ on, attrs }">
+                <v-btn color="error" @click="cerrarSesion">
+                  <v-icon>mdi-logout</v-icon>
+                </v-btn>
+                <v-divider class="mx-6" inset vertical></v-divider>
                 <v-btn color="success" dark v-bind="attrs" v-on="on">
                   <v-icon>mdi-plus</v-icon>
                 </v-btn>
@@ -122,7 +126,7 @@
                       </v-row>
                       <div>
                         <label v-show="false" for="">{{ calculaPago }}</label>
-                        <v-text-field :rules="numberRules" label="A Pagar" v-model="editedItem.pagar"
+                        <v-text-field :rules="numberRules" readonly label="A Pagar" v-model="editedItem.pagar"
                           required></v-text-field>
                       </div>
                       <v-row v-show="false" class="main-div">
@@ -143,9 +147,9 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                    <v-btn color="error darken-1" text @click="close">
-                      Cancelar
-                    </v-btn>
+                  <v-btn color="error darken-1" text @click="close">
+                    Cancelar
+                  </v-btn>
                   <v-btn color="blue darken-1" text @click="saveData">
                     Guardar
                   </v-btn>
@@ -175,7 +179,8 @@
       </template>
     </v-data-table>
     <v-dialog v-model="dialogTimbrado" max-width="700px">
-      <FormTimbrado :capitalHumanoItem="capitalHumanoItem" :idCapitalH="idCapitalH" @actualizar="actualizarTableTimbrado" @closeCompTim="close" />
+      <FormTimbrado :capitalHumanoItem="capitalHumanoItem" :idCapitalH="idCapitalH" @actualizar="actualizarTableTimbrado"
+        @closeCompTim="close" />
     </v-dialog>
   </v-container>
 </template>
@@ -213,8 +218,8 @@ export default {
     headers: [
       { text: "ID", align: "start", value: "id" },
       { text: "Concepto", value: "concepto", sortable: false, },
-      { text: "Fondo", value: "fondo", sortable: false,},
-      { text: "Número de Oficio", value: "numeroOficio", sortable: false,},
+      { text: "Fondo", value: "fondo", sortable: false, },
+      { text: "Número de Oficio", value: "numeroOficio", sortable: false, },
       { text: "Fecha de Inicio", value: "fechaInicio" },
       { text: "Fecha Fin", value: "fechaFin" },
       { text: "Fecha Pago", value: "fechaPago" },
@@ -308,13 +313,13 @@ export default {
       axios
         .get("http://localhost:8082/api/CapitalHumano/dataCapital/true", {
           headers: {
-            "Access-Control-Allow-Origin" : "*",
+            "Access-Control-Allow-Origin": "*",
             "Content-type": "Application/json",
             "Authorization": `Bearer ${auth.token}`
-            }
+          }
         })
         .then((response) => {
-          console.log(auth.token)
+          // console.log(auth.token)
           this.result = response.data.data;
           this.desserts = response.data;
           this.menuFechaBusqueda = false;
@@ -360,10 +365,9 @@ export default {
         })
         .catch(() => {
           this.close();
-          console.log("Error");
         });
     },
-    actualizarTableTimbrado(){
+    actualizarTableTimbrado() {
       this.$refs.itemTimbrado.getMapping();
     },
     buscarFecha() {
@@ -401,7 +405,8 @@ export default {
       }
     },
     tipoFechaBusqueda(direccion) {
-      axios.get(direccion).then((response) => {
+      axios.get(direccion, {
+      }).then((response) => {
         console.log("Entro");
         this.desserts = response.data;
         this.menuFechaBusqueda = false;
@@ -414,6 +419,7 @@ export default {
       let statusFalse = false;
       axios
         .put("http://localhost:8082/api/CapitalHumano/statusCapital/" + id, {
+          
           status: statusFalse,
         })
         .then(() => {
@@ -424,7 +430,8 @@ export default {
       this.editedIndex = this.desserts.indexOf(item);
       try {
         axios
-          .get("http://localhost:8082/api/CapitalHumano/" + item.id)
+          .get("http://localhost:8082/api/CapitalHumano/" + item.id, {
+          })
           .then((response) => {
             this.dialog = true;
             this.editedItem = response.data;
@@ -433,6 +440,11 @@ export default {
           });
       } catch (error) { }
       // this.dialog = true;
+    },
+    cerrarSesion() {
+      localStorage.removeItem('token');
+      // console.log(auth.token)
+      this.$router.push({ path: '/' });
     },
     close() {
       this.$refs.form.resetValidation();
