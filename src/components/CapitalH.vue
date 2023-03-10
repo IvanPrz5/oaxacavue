@@ -259,7 +259,6 @@ export default {
         pagar: 0,
       },
     ],
-    token: "",
   }),
   created() {
     this.getMapping();
@@ -268,6 +267,9 @@ export default {
     dialog(val) {
       val || this.close();
     },
+    token(){
+      this.token = localStorage.token
+    }
   },
   computed: {
     calculaPago() {
@@ -320,7 +322,6 @@ export default {
         })
         .then((response) => {
           // console.log(auth.token)
-          this.result = response.data.data;
           this.desserts = response.data;
           this.menuFechaBusqueda = false;
           this.algo = true;

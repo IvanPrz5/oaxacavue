@@ -10,9 +10,9 @@
             <v-col cols="12" md="4">
               <v-file-input v-model="archivo" label="Guardar Archivo" value="file" outlined
                 dense></v-file-input>
-                <!-- <v-text-field v-model="name" required dense outlined></v-text-field>
+                <v-text-field v-model="name" required dense outlined></v-text-field>
                 <v-text-field v-model="algo" required dense outlined></v-text-field>
-                <v-btn @click="subirArchivo">Subir Archivo</v-btn> -->
+                <v-btn @click="subirArchivo">Subir Archivo</v-btn>
             </v-col>
             <!-- <v-col cols="12" md="4">
               <v-text-field :rules="txtRules" label="Archivo" v-model="editedItem.archivo" required dense
@@ -322,28 +322,21 @@ export default {
         .substr(0, 10);
     },
     /* onImageUpload() {
-      let file = this.archivo;
       this.formData = new FormData();
-      this.formData.append("file", file);
+      this.formData.append("file", this.archivo, this.algo, this.name);
       console.log("entro")
     }, */
-    /* subirArchivo() {
-      let instFormData = new FormData();
-      instFormData.append('file', this.archivo);
-      console.log(instFormData);
-      console.log(this.name);
-      console.log(this.algo);
-
-      axios.post("http://localhost:8082/api/Archivo", instFormData, {
-        name: this.name,
-        algo: this.algo,
-      })
+    subirArchivo() {
+      let formData = new FormData();
+      formData.append("file", this.archivo, this.algo, this.name);
+      console.log(formData)
+      axios.post("http://localhost:8082/api/Archivo", instFormData)
         .then(function (result) {
-          console.log("no guardo");
+          console.log("Si");
         }, function (error) {
           console.log("no guardo");
         });
-    } */
+    }
   }
 };
 </script>
