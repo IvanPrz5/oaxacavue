@@ -5,19 +5,8 @@
     </v-card-title>
     <v-card-text>
       <v-container>
-        <v-form ref="form" lazy-validation enctype="multipart/form-data">
+        <v-form name="formTimbrado" ref="form" lazy-validation enctype="multipart/form-data">
           <v-row class="form-calendar">
-            <v-col cols="12" md="4">
-              <v-file-input v-model="archivo" label="Guardar Archivo" value="file" outlined
-                dense></v-file-input>
-                <v-text-field v-model="name" required dense outlined></v-text-field>
-                <v-text-field v-model="algo" required dense outlined></v-text-field>
-                <v-btn @click="subirArchivo">Subir Archivo</v-btn>
-            </v-col>
-            <!-- <v-col cols="12" md="4">
-              <v-text-field :rules="txtRules" label="Archivo" v-model="editedItem.archivo" required dense
-                outlined></v-text-field>
-            </v-col> -->
             <v-col cols="12" md="4">
               <v-text-field :rules="txtRules" label="Archivo Timbrado" v-model="editedItem.archivoTimbrar" required dense
                 outlined></v-text-field>
@@ -25,6 +14,10 @@
             <v-col cols="12" md="4">
               <v-text-field :rules="numberRules" @keypress="onlyNumber" label="Total de Empleados"
                 v-model="editedItem.totalEmpleados" required dense outlined></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field :rules="txtRules" label="Documento Contable" v-model="editedItem.documentoContable" dense
+                required outlined></v-text-field>
             </v-col>
           </v-row>
           <v-row class="calendar-div">
@@ -78,8 +71,8 @@
                 required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field :rules="txtRules" label="Documento Contable" v-model="editedItem.documentoContable" dense
-                required outlined></v-text-field>
+              <v-text-field :rules="txtRules" label="Nómina" v-model="editedItem.nomina" dense required
+                outlined></v-text-field>
             </v-col>
           </v-row>
           <v-row>
@@ -92,8 +85,8 @@
                 v-model="editedItem.numEjecuciones" dense required outlined></v-text-field>
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field :rules="txtRules" label="Nómina" v-model="editedItem.nomina" dense required
-                outlined></v-text-field>
+              <v-file-input v-if="capitalHumanoItem" v-model="editedItem.archivo" label="Guardar Archivo" value="file" outlined
+                dense></v-file-input>
             </v-col>
           </v-row>
           <v-row>
@@ -171,6 +164,7 @@ export default {
     archivo: "",
     name: "",
     algo: "",
+    idToUpdateFile: "",
   }),
   created() {
     this.getMapping();
@@ -191,14 +185,12 @@ export default {
       this.dialog = true;
     },
     getSNFC() {
-      axios.get("http://localhost:8082/api/SNFC", {
-      }).then((response) => {
+      axios.get("http://localhost:8082/api/SNFC", {}).then((response) => {
         this.snfc = response.data;
       });
     },
     getStatus() {
-      axios.get("http://localhost:8082/api/Status", {
-      }).then((response) => {
+      axios.get("http://localhost:8082/api/Status", {}).then((response) => {
         this.statusTable = response.data;
       });
     },
@@ -228,46 +220,24 @@ export default {
       let validarForm = this.$refs.form.validate();
       if (validarForm) {
         if (this.capitalHumanoItem) {
-          let instFormData = new FormData();
-          instFormData.append('file', this.editedItem.archivo);
           let url = "http://localhost:8082/api/Timbrado";
           let post = axios.post;
-          // this.tipoDeGuardado(post, url);
-          post(url, instFormData, {
-            // archivo: this.editedItem.archivo,
-            archivoTimbrar: this.editedItem.archivoTimbrar,
-            totalEmpleados: this.editedItem.totalEmpleados,
-            fechaInicio: this.dates[0],
-            fechaFin: this.dates[1],
-            fechaPago: this.dateFechaPago,
-            catalogoSNFCEntity: { id: this.descripcionSNFC },
-            catalogoStatusEntity: { id: this.descripcionStatus },
-            fechaSubida: this.dateFechaSubida,
-            importeIsr: this.editedItem.importeIsr,
-            neto: this.editedItem.neto,
-            documentoContable: this.editedItem.documentoContable,
-            numero: this.editedItem.numero,
-            numEjecuciones: this.editedItem.numEjecuciones,
-            nomina: this.editedItem.nomina,
-            capitalHEntity: { id: this.idCapitalH },
-            observaciones: this.editedItem.observaciones,
-            status: this.status,
-          })
+          this.guardarDatos(post, url);
         } else if (this.timbradoItem) {
           let url = "http://localhost:8082/api/Timbrado/" + this.idTimbradoForm;
           let put = axios.put;
-          this.tipoDeGuardado(put, url);
+          this.actualizarDatos(put, url);
         }
       } else {
         console.log("Error");
       }
     },
-    tipoDeGuardado(tipoAxios, direccion) {
+    actualizarDatos(tipoAxios, direccion) {
       if (this.idCapitalH === undefined) {
         this.idCapitalH = this.editedItem.idCapitalHumano;
       }
       tipoAxios(direccion, {
-        archivo: this.editedItem.archivo,
+        // archivo: this.editedItem.archivo,
         archivoTimbrar: this.editedItem.archivoTimbrar,
         totalEmpleados: this.editedItem.totalEmpleados,
         fechaInicio: this.dates[0],
@@ -286,9 +256,45 @@ export default {
         observaciones: this.editedItem.observaciones,
         status: this.status,
       })
-        .then(() => {
+        .then((response) => {
           this.closeTimbrado();
           this.$emit("actualizar");
+        })
+        .catch(() => {
+          this.closeTimbrado();
+        });
+    },
+    guardarDatos(tipoAxios, direccion) {
+      tipoAxios(direccion, {
+        // archivo: this.editedItem.archivo,
+        archivoTimbrar: this.editedItem.archivoTimbrar,
+        totalEmpleados: this.editedItem.totalEmpleados,
+        fechaInicio: this.dates[0],
+        fechaFin: this.dates[1],
+        fechaPago: this.dateFechaPago,
+        catalogoSNFCEntity: { id: this.descripcionSNFC },
+        catalogoStatusEntity: { id: this.descripcionStatus },
+        fechaSubida: this.dateFechaSubida,
+        importeIsr: this.editedItem.importeIsr,
+        neto: this.editedItem.neto,
+        documentoContable: this.editedItem.documentoContable,
+        numero: this.editedItem.numero,
+        numEjecuciones: this.editedItem.numEjecuciones,
+        nomina: this.editedItem.nomina,
+        capitalHEntity: { id: this.idCapitalH },
+        observaciones: this.editedItem.observaciones,
+        status: this.status,
+      })
+        .then((response) => {
+          let formData = new FormData();
+          formData.append("file", this.editedItem.archivo);
+          axios.put("http://localhost:8082/api/Timbrado/archivo/" + response.data.id, formData, {
+          })
+            .then(() => {
+              console.log("actualizo");
+              this.$emit("actualizar");
+            });
+          this.closeTimbrado();
         })
         .catch(() => {
           this.closeTimbrado();
@@ -321,22 +327,6 @@ export default {
         .toISOString()
         .substr(0, 10);
     },
-    /* onImageUpload() {
-      this.formData = new FormData();
-      this.formData.append("file", this.archivo, this.algo, this.name);
-      console.log("entro")
-    }, */
-    subirArchivo() {
-      let formData = new FormData();
-      formData.append("file", this.archivo, this.algo, this.name);
-      console.log(formData)
-      axios.post("http://localhost:8082/api/Archivo", instFormData)
-        .then(function (result) {
-          console.log("Si");
-        }, function (error) {
-          console.log("no guardo");
-        });
-    }
-  }
+  },
 };
 </script>

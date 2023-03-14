@@ -47,13 +47,14 @@ export default {
           password: this.password,
         };
         axios.post("http://localhost:8082/login", userCred, {}).then((response) => {
-          console.log(response)
+          // console.log(response)
           const headers = response.headers;
           // console.log("->"+response.headers);
           const bToken = headers.get("Authorization");
           const token = bToken.replace("Bearer ", "");
           localStorage.setItem("token", token);
-          router.push("/CapitalHumano");
+          this.$router.push({ path: '/CapitalHumano' });
+          // router.push("/CapitalHumano");
           // console.log(response);
         }).catch((error) => {
           // console.log(error)

@@ -818,3 +818,42 @@ export default {
         console.log(JSON.stringify(response.data))
       });
     } */
+
+    /* subirArchivo(){
+      axios.post("http://localhost:8082/api/Archivo", {
+        file: this.archivo,
+        name: this.name,
+        algo: this.algo,
+      }).then((response) => {
+        console.log(response)
+        console.log('Hola');
+      })
+    }, */
+    /* actualizarArchivo(){
+      let formData = new FormData();
+      formData.append("file", this.editedItem.archivo);
+      console.log(this.idTimbradoForm);
+      axios.put("http://localhost:8082/api/Archivo/" + this.idTimbradoForm, formData, {})
+      .then((response) => {
+        console.log("entro")
+      });
+    }, */
+    /* onImageUpload() {
+      this.formData = new FormData();
+      this.formData.append("file", this.archivo, this.algo, this.name);
+      console.log("entro")
+    }, */
+    /* subirArchivo() {
+      let formData = new FormData();
+      formData.append("file", this.archivo);
+      console.log(this.algo);
+      console.log(this.name);
+      axios.post("http://localhost:8082/api/Archivo", formData, {
+        algo: this.algo,
+        name: this.name,
+      })
+        .then((response) => {
+        }, function (error) {
+          console.log("no guardo");
+        });
+    } */
