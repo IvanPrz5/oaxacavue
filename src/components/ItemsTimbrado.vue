@@ -3,6 +3,13 @@
     <v-data-table style="background-color: #AED0E3" :headers="headers" :items="desserts" class="elevation-1"
       :expanded.sync="expanded" show-expand>
       <!-- hide-default-footer -->
+      <template v-slot:[`item.actions-descarga`]="{ item }">
+        <div>
+          <v-btn color="pink" icon small @click="descargarArchivo">
+            <v-icon> mdi-download </v-icon>
+          </v-btn>
+        </div>
+      </template>
       <template v-slot:[`item.actions`]="{ item }">
         <div class="btn-control">
           <v-btn class="mr-3" elevation="1" color="purple" fab dark tile x-small @click="agregarResultado(item.id)">
@@ -23,11 +30,12 @@
       </template>
     </v-data-table>
     <v-dialog v-model="dialog" max-width="700px">
-      <FormTimbrado ref="formTimbrado" :timbradoItem="timbradoItem" :idTimbradoForm="idTimbradoForm"
-        @closeCompTim="close" @actualizar="getMapping"/>
+      <FormTimbrado ref="formTimbrado" :timbradoItem="timbradoItem" :idTimbradoForm="idTimbradoForm" @closeCompTim="close"
+        @actualizar="getMapping" />
     </v-dialog>
     <v-dialog v-model="dialogResultado" max-width="700px">
-      <FormResultado :timbradoProp="timbradoProp" :idTimbrado="idTimbrado" @closeCompRes="close" @actualizar="actualizarTableResultado"/>
+      <FormResultado :timbradoProp="timbradoProp" :idTimbrado="idTimbrado" @closeCompRes="close"
+        @actualizar="actualizarTableResultado" />
     </v-dialog>
   </v-container>
 </template>
@@ -57,7 +65,8 @@ export default {
     desserts: [],
     headers: [
       { text: "ID", align: "start", value: "id" },
-      { text: "Archivo", value: "archivo", sortable: false, },
+      { text: "Archivo", value: "actions-descarga", sortable: false },
+      // { text: "Archivo", value: "archivo", sortable: false, },
       { text: "Archivo Timbrar", value: "archivoTimbrar", sortable: false, },
       { text: "Fecha Inicio", value: "fechaInicio" },
       { text: "Fecha Fin", value: "fechaFin" },
@@ -137,6 +146,9 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    descargarArchivo(){
+      console.log("Descargar Archivo")
     },
     close() {
       this.dialog = false

@@ -161,9 +161,6 @@ export default {
         observaciones: "",
       },
     ],
-    archivo: "",
-    name: "",
-    algo: "",
     idToUpdateFile: "",
   }),
   created() {
@@ -291,7 +288,7 @@ export default {
           axios.put("http://localhost:8082/api/Timbrado/archivo/" + response.data.id, formData, {
           })
             .then(() => {
-              console.log("actualizo");
+              console.log("guardi");
               this.$emit("actualizar");
             });
           this.closeTimbrado();
